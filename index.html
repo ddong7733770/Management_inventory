@@ -1,0 +1,4062 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>아이코닉스 영업본부 재고자산 현황 대시보드 (2025.03 ~ 2026.08)</title>
+  <!-- SheetJS (xlsx) & Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    /* ==========================================================================
+       Ant Design v5 Light Mode Design System Tokens
+       ========================================================================== */
+    :root {
+      --color-primary-50:  #E6F4FF;
+      --color-primary-100: #BAE0FF;
+      --color-primary-200: #91CAFF;
+      --color-primary-300: #69B1FF;
+      --color-primary-400: #4096FF;
+      --color-primary-500: #1677FF;
+      --color-primary-600: #0958D9;
+      --color-primary-700: #003EB3;
+      --color-primary-800: #002C8C;
+      --color-primary-900: #001D66;
+
+      --color-secondary-500: #FA541C;
+
+      --color-neutral-0:    #FFFFFF;
+      --color-neutral-50:   #FAFAFA;
+      --color-neutral-100:  #F5F5F5;
+      --color-neutral-200:  #F0F0F0;
+      --color-neutral-300:  #D9D9D9;
+      --color-neutral-500:  #BFBFBF;
+      --color-neutral-700:  #8C8C8C;
+      --color-neutral-800:  #595959;
+      --color-neutral-900:  #262626;
+      --color-neutral-1000: #000000;
+
+      --color-success-bg: #F6FFED;
+      --color-success-border: #B7EB8F;
+      --color-success-fg: #52C41A;
+      --color-warning-bg: #FFFBE6;
+      --color-warning-border: #FFE58F;
+      --color-warning-fg: #FAAD14;
+      --color-error-bg:   #FFF1F0;
+      --color-error-border: #FFCCC7;
+      --color-error-fg:   #FF4D4F;
+      --color-info-bg:    #E6F4FF;
+      --color-info-border:#91CAFF;
+      --color-info-fg:    #1677FF;
+
+      --bg-base:     #FFFFFF;
+      --bg-subtle:   #F5F5F5;
+      --bg-table-head: #FAFAFA;
+      --bg-elevated: #FFFFFF;
+
+      --text-primary:    rgba(0,0,0,0.88);
+      --text-secondary:  rgba(0,0,0,0.65);
+      --text-tertiary:   rgba(0,0,0,0.45);
+      --text-disabled:   rgba(0,0,0,0.25);
+
+      --border-default: #D9D9D9;
+      --border-subtle:  #F0F0F0;
+      --border-strong:  #BFBFBF;
+      --border-focus:   #1677FF;
+
+      --radius-sm: 2px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02), 0 2px 4px 0 rgba(0,0,0,0.02);
+      --shadow-md: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+
+      --duration-fast: 100ms;
+      --duration-base: 200ms;
+      --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+      --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 360px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 14px;
+      line-height: 1.5715;
+      color: var(--text-primary);
+      background: var(--bg-subtle);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+
+    /* ==========================================================================
+       Layout Shell (Ant Design Pro Sider + Workspace)
+       ========================================================================== */
+    .ant-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+      background: var(--bg-subtle);
+    }
+    .ant-sider {
+      background: #001529;
+      color: rgba(255,255,255,0.65);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 30;
+    }
+    .ant-brand {
+      height: 44px;
+      padding: 0 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 12px;
+    }
+    .ant-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--color-primary-500);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(22,119,255,0.4);
+      flex-shrink: 0;
+    }
+    .ant-menu-label {
+      padding: 12px 10px 6px;
+      color: rgba(255,255,255,0.38);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .ant-menu-item {
+      height: 38px;
+      margin: 2px 0;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-base) var(--ease-in-out);
+    }
+    .ant-menu-item:hover {
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.08);
+    }
+    .ant-menu-item.active {
+      background: var(--color-primary-500);
+      color: #FFFFFF;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(22,119,255,0.3);
+    }
+    .ant-menu-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .ant-menu-badge {
+      margin-left: auto;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.15);
+      font-size: 11px;
+      color: #fff;
+    }
+    .ant-sider-box {
+      margin-top: 10px;
+      padding: 11px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.65);
+    }
+    .ant-sider-box strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    /* 좌측 하단 비교분석 버튼 영역 */
+    .sider-compare-box {
+      margin-top: auto;
+      padding: 12px 10px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(22,119,255,0.18) 0%, rgba(22,119,255,0.06) 100%);
+      border: 1px solid rgba(105,177,255,0.3);
+      margin-bottom: 12px;
+    }
+    .sider-compare-title {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .sider-compare-desc {
+      font-size: 11px;
+      color: rgba(255,255,255,0.68);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .btn-sider-compare {
+      width: 100%;
+      height: 34px;
+      border-radius: var(--radius-md);
+      border: 1px solid #4096FF;
+      background: var(--color-primary-500);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all var(--duration-fast);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .btn-sider-compare:hover {
+      background: var(--color-primary-400);
+    }
+    .btn-sider-compare-clear {
+      width: 100%;
+      margin-top: 6px;
+      height: 26px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.85);
+      font-size: 11px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-sider-compare-clear:hover {
+      background: rgba(255,77,79,0.25);
+      border-color: #FF4D4F;
+      color: #fff;
+    }
+
+    .ant-sider-footer {
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .ant-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #69B1FF, #1677FF);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       Workspace & Sticky Header / Global Filter Bar
+       ========================================================================== */
+    .ant-workspace {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .global-header {
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .header-title-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header-title-area h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+    .period-badge {
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--color-info-bg);
+      border: 1px solid var(--color-info-border);
+      color: var(--color-info-fg);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .conn-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border-default);
+      background: var(--color-neutral-50);
+    }
+    .status-pill.live {
+      background: var(--color-success-bg);
+      border-color: var(--color-success-border);
+      color: var(--color-success-fg);
+    }
+    .status-pill.file {
+      background: var(--color-warning-bg);
+      border-color: var(--color-warning-border);
+      color: #D48806;
+    }
+    .status-pill.error {
+      background: var(--color-error-bg);
+      border-color: var(--color-error-border);
+      color: var(--color-error-fg);
+    }
+
+    /* Global Filter Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* Segmented Control */
+    .segmented {
+      display: inline-flex;
+      background: var(--color-neutral-100);
+      padding: 2px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+    .segmented button {
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      height: 26px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .segmented button:hover { color: var(--text-primary); }
+    .segmented button.active {
+      background: var(--bg-base);
+      color: var(--color-primary-500);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Multi-select Button Chips */
+    .multi-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .multi-btn {
+      border: 1px solid var(--border-default);
+      background: var(--bg-base);
+      color: var(--text-secondary);
+      padding: 2px 9px;
+      height: 26px;
+      font-size: 11.5px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .multi-btn:hover {
+      border-color: var(--color-primary-400);
+      color: var(--color-primary-500);
+    }
+    .multi-btn.active {
+      background: var(--color-primary-50);
+      border-color: var(--color-primary-500);
+      color: var(--color-primary-600);
+      font-weight: 600;
+    }
+    .multi-btn.active-danger {
+      background: var(--color-error-bg);
+      border-color: var(--color-error-fg);
+      color: var(--color-error-fg);
+      font-weight: 600;
+    }
+    .multi-btn.active-warning {
+      background: var(--color-warning-bg);
+      border-color: var(--color-warning-fg);
+      color: #D48806;
+      font-weight: 600;
+    }
+    .multi-btn.active-success {
+      background: var(--color-success-bg);
+      border-color: var(--color-success-fg);
+      color: var(--color-success-fg);
+      font-weight: 600;
+    }
+
+    /* Ant Inputs & Buttons */
+    .ant-select, .ant-input {
+      background: var(--bg-base);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 4px 11px;
+      height: 30px;
+      font-size: 13px;
+      color: var(--text-primary);
+      transition: all var(--duration-base);
+    }
+    .ant-select:hover, .ant-input:hover { border-color: var(--color-primary-400); }
+    .ant-select:focus, .ant-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 2px rgba(5,145,255,0.10);
+    }
+    .btn {
+      font-size: 13px;
+      border-radius: var(--radius-md);
+      padding: 4px 12px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--duration-base) var(--ease-in-out);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.02);
+      white-space: nowrap;
+    }
+    .btn:hover { color: var(--color-primary-500); border-color: var(--color-primary-500); }
+    .btn-primary {
+      background: var(--color-primary-500);
+      border-color: var(--color-primary-500);
+      color: #fff;
+      box-shadow: 0 2px 0 rgba(5,145,255,0.10);
+    }
+    .btn-primary:hover { background: var(--color-primary-400); border-color: var(--color-primary-400); color: #fff; }
+
+    /* ==========================================================================
+       Main Container, Upload Zone & Comparison Analysis Panel
+       ========================================================================== */
+    .main-container {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 20px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .upload-zone {
+      background: var(--bg-base);
+      border: 2px dashed var(--color-primary-300);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      text-align: center;
+      transition: all var(--duration-base);
+      box-shadow: var(--shadow-sm);
+    }
+    .upload-zone.dragover {
+      background: var(--color-primary-50);
+      border-color: var(--color-primary-500);
+    }
+    .upload-zone h3 { margin: 8px 0 4px; font-size: 16px; color: var(--text-primary); }
+    .upload-zone p { margin: 0 0 16px; font-size: 13px; color: var(--text-secondary); }
+    .alert-banner {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-warning-border);
+      background: var(--color-warning-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .alert-banner.error {
+      border-color: var(--color-error-border);
+      background: var(--color-error-bg);
+      color: var(--color-error-fg);
+    }
+
+    /* 비교분석 결과 패널 */
+    .compare-panel {
+      background: var(--bg-base);
+      border: 2px solid var(--color-primary-400);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: none;
+    }
+    .compare-panel-head {
+      background: linear-gradient(90deg, #E6F4FF 0%, #F5F9FF 100%);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--color-primary-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .compare-panel-body {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .compare-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .compare-stat-box {
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--color-neutral-50);
+      border: 1px solid var(--border-subtle);
+      font-size: 12px;
+    }
+    .compare-stat-box .lbl { color: var(--text-secondary); font-weight: 500; font-size: 11.5px; }
+    .compare-stat-box .vals { font-size: 13px; font-weight: 700; margin: 4px 0 2px; color: var(--text-primary); }
+    .compare-stat-box .delta { font-size: 11.5px; font-weight: 600; }
+    .delta-plus { color: var(--color-error-fg); }
+    .delta-minus { color: var(--color-success-fg); }
+    .delta-neutral { color: var(--text-tertiary); }
+
+    /* ==========================================================================
+       Row 1: 6-Column KPI Summary Cards
+       ========================================================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .kpi-card {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .kpi-card.highlight-danger { border-top: 3px solid var(--color-error-fg); }
+    .kpi-card.highlight-primary { border-top: 3px solid var(--color-primary-500); }
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .kpi-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-50);
+      color: var(--color-primary-600);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .kpi-icon.danger { background: var(--color-error-bg); color: var(--color-error-fg); }
+    .kpi-icon.warning { background: var(--color-warning-bg); color: var(--color-warning-fg); }
+    .kpi-value {
+      margin: 10px 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .trend-up { color: var(--color-error-fg); font-weight: 600; }
+    .trend-info { color: var(--color-primary-600); font-weight: 600; }
+
+    /* ==========================================================================
+       Row 2 & Row 3: Grid Panels & Cards
+       ========================================================================== */
+    .row-2-grid {
+      display: grid;
+      grid-template-columns: 5.2fr 6.8fr;
+      gap: 16px;
+    }
+    .row-3-grid {
+      display: grid;
+      grid-template-columns: 6fr 6fr;
+      gap: 16px;
+    }
+    .card {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .card-head {
+      padding: 12px 20px;
+      min-height: 52px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-title-group h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title-group p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .card-body {
+      padding: 14px 20px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .chart-box {
+      position: relative;
+      width: 100%;
+      height: 250px;
+    }
+
+    /* Filter Sub-box inside Cards (Chart 5 & Chart 4) */
+    .sub-filter-panel {
+      background: var(--color-neutral-50);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sub-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sub-filter-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 105px;
+    }
+
+    /* Summary Analysis Box */
+    .analysis-summary-box {
+      background: #F8FAFC;
+      border: 1px solid var(--color-primary-100);
+      border-left: 3px solid var(--color-primary-500);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .analysis-summary-box.danger {
+      background: #FFF9F9;
+      border-color: var(--color-error-border);
+      border-left: 3px solid var(--color-error-fg);
+    }
+    .analysis-metrics-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .metric-pill {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11.5px;
+    }
+
+    /* 차트 2 하단 교차표: 기존(AP) 행은 볼드·컬러 취소, 실질(BJ) 합계 행만 별도 컬러 + 볼드 */
+    .cross-mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+    .cross-mini-table th, .cross-mini-table td {
+      border: 1px solid var(--border-subtle);
+      padding: 6px 8px;
+      text-align: right;
+      font-weight: 400;
+      background: #FFFFFF;
+      color: var(--text-primary);
+    }
+    .cross-mini-table th {
+      background: var(--bg-table-head);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-align: center;
+    }
+    .cross-mini-table td:first-child {
+      text-align: center;
+      font-weight: 400;
+      background: #FFFFFF;
+      color: var(--text-secondary);
+    }
+    .cross-mini-table tr.bj-sum-row td {
+      background: var(--color-primary-50) !important;
+      color: var(--color-primary-800) !important;
+      font-weight: 700 !important;
+      border-top: 2px solid var(--color-primary-300);
+    }
+    .cross-mini-table tr.bj-sum-row td .pct-sub {
+      color: var(--color-primary-700) !important;
+      font-weight: 700 !important;
+    }
+    .pct-sub {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    /* 차트 3: 기간 수불 흐름 브릿지 표 스타일 */
+    .flow-bridge-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .flow-bridge-table th, .flow-bridge-table td {
+      border: 1px solid var(--border-subtle);
+      padding: 6px 10px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .flow-bridge-table th {
+      background: var(--bg-table-head);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-align: center;
+    }
+    .flow-bridge-table td.flow-cat {
+      text-align: center;
+      font-weight: 600;
+      background: var(--color-neutral-50);
+    }
+    .flow-bridge-table td.flow-step {
+      text-align: left;
+    }
+    .flow-bridge-table tr.flow-total-row td {
+      background: #FAFAFA;
+      font-weight: 700;
+    }
+    .flow-bridge-table tr.flow-ending-row td {
+      background: var(--color-primary-50);
+      color: var(--color-primary-800);
+      font-weight: 700;
+      border-top: 2px solid var(--color-primary-300);
+    }
+    .flow-diff-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .flow-diff-box {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: #F8FAFC;
+      border: 1px solid var(--color-primary-100);
+      border-left: 3px solid var(--color-primary-500);
+      font-size: 12px;
+    }
+    .flow-diff-box.qty-box {
+      border-color: #B7EB8F;
+      border-left-color: #52C41A;
+      background: #F9FFF6;
+    }
+
+    /* IP Summary Grid inside Chart 1 */
+    .ip-info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .ip-info-card {
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: var(--color-neutral-50);
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      transition: border-color var(--duration-fast);
+    }
+    .ip-info-card:hover { border-color: var(--color-primary-300); }
+    .ip-info-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .ip-info-amt {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary-700);
+    }
+
+    /* ==========================================================================
+       Row 4: Actionable Data Table, Custom Multi-Dropdown & 2x Width Search
+       ========================================================================== */
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 20px;
+      background: var(--color-neutral-50);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .quick-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .quick-tab {
+      border: 1px solid var(--border-default);
+      background: var(--bg-base);
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      padding: 4px 10px;
+      height: 30px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--duration-fast);
+    }
+    .quick-tab:hover { border-color: var(--color-primary-400); color: var(--color-primary-500); }
+    .quick-tab.active {
+      background: var(--color-primary-500);
+      border-color: var(--color-primary-500);
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+    .quick-tab .count {
+      padding: 0 5px;
+      border-radius: var(--radius-full);
+      background: rgba(0,0,0,0.06);
+      font-size: 11px;
+    }
+    .quick-tab.active .count {
+      background: rgba(255,255,255,0.22);
+      color: #fff;
+    }
+
+    /* Custom Multi-Select Dropdown (IP 복수선택 드롭다운) */
+    .multi-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .multi-dropdown-btn {
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .multi-dropdown-btn:hover { border-color: var(--color-primary-400); }
+    .multi-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      min-width: 210px;
+      background: var(--bg-base);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 6px;
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .multi-dropdown-menu.open { display: flex; }
+    .multi-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .multi-dropdown-item:hover { background: var(--color-neutral-100); }
+
+    /* 검색창 가로 사이즈 2배(500px) 확대 */
+    .search-suggest-wrap {
+      position: relative;
+      width: 500px;
+      max-width: 100%;
+    }
+    .suggest-box {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--bg-base);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      z-index: 60;
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+      padding: 6px;
+    }
+    .suggest-box.open { display: block; }
+    .suggest-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      padding: 2px 6px 4px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 4px;
+    }
+    .suggest-chips {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      padding: 4px 6px 6px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 4px;
+    }
+    .suggest-chip {
+      font-size: 11px;
+      padding: 2px 7px;
+      background: var(--color-primary-50);
+      color: var(--color-primary-600);
+      border: 1px solid var(--color-primary-200);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+    }
+    .suggest-chip:hover { background: var(--color-primary-500); color: #fff; }
+    .suggest-item {
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .suggest-item:hover { background: var(--color-neutral-100); }
+
+    /* Data Table */
+    .table-wrapper { width: 100%; overflow-x: auto; }
+    .ant-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    .ant-table th {
+      background: var(--bg-table-head);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--duration-fast);
+    }
+    .ant-table th:hover { background: var(--color-neutral-200); }
+    .ant-table td {
+      padding: 9px 12px;
+      min-height: 38px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    .ant-table tbody tr:hover { background: #F5F9FF; }
+    .ant-table tbody tr.row-warning { background: #FFFDF5; }
+    .num-col { text-align: right !important; font-variant-numeric: tabular-nums; }
+    .code-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-primary-700);
+      background: var(--color-primary-50);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Ant Design Tags */
+    .tag {
+      padding: 0 7px;
+      height: 22px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 20px;
+      border: 1px solid;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .tag-success { background: var(--color-success-bg); color: var(--color-success-fg); border-color: var(--color-success-border); }
+    .tag-warning { background: var(--color-warning-bg); color: #D48806; border-color: var(--color-warning-border); }
+    .tag-error { background: var(--color-error-bg); color: var(--color-error-fg); border-color: var(--color-error-border); }
+    .tag-neutral { background: var(--color-neutral-100); color: var(--text-secondary); border-color: var(--border-default); }
+    .tag-info { background: var(--color-info-bg); color: var(--color-info-fg); border-color: var(--color-info-border); }
+
+    .pagination-bar {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-base);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    @media (max-width: 1280px) {
+      .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .row-2-grid, .row-3-grid { grid-template-columns: 1fr; }
+      .ip-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .compare-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow-diff-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .ant-shell { grid-template-columns: 72px minmax(0, 1fr); }
+      .ant-brand span, .ant-menu-label, .ant-menu-item span, .ant-menu-badge, .ant-sider-box, .sider-compare-title, .sider-compare-desc, .btn-sider-compare span, .ant-sider-footer div { display: none; }
+      .ant-menu-item { justify-content: center; padding: 0; }
+      .ant-brand { justify-content: center; padding-inline: 0; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .search-suggest-wrap { width: 100%; }
+    }
+    @media (max-width: 640px) {
+      .ant-shell { display: block; }
+      .ant-sider { display: none; }
+      .global-header { padding: 12px 16px; position: static; }
+      .main-container { padding: 12px 16px 32px; }
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ant-shell">
+  <!-- ======================= Left Navigation Sider ======================= -->
+  <aside class="ant-sider">
+    <div class="ant-brand">
+      <div class="ant-logo">IX</div>
+      <span>ICONIX 재고분석</span>
+    </div>
+
+    <div class="ant-menu-label">Analytics</div>
+    <nav aria-label="대시보드 섹션 네비게이션">
+      <a href="#sec-kpi" class="ant-menu-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>핵심 KPI 요약</span>
+      </a>
+      <a href="#sec-row2" class="ant-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg>
+        <span>등급교차 & 수불표</span>
+      </a>
+      <a href="#sec-row3" class="ant-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7.5" cy="14.5" r="3.5"/><circle cx="15" cy="8" r="4"/><circle cx="17.5" cy="16.5" r="2.5"/></svg>
+        <span>품목군/IP & 리스크</span>
+      </a>
+      <a href="#sec-row4" class="ant-menu-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span>중점관리 SKU 명세</span>
+        <span class="ant-menu-badge" id="navSkuCount">3,116</span>
+      </a>
+    </nav>
+
+    <div class="ant-menu-label">분류 및 산식 기준</div>
+    <div class="ant-sider-box">
+      <strong>IP 우선순위 분류 (C열)</strong>
+      뽀로로 → 타요 → 잔망루피(잔망 포함) → 데코데코 → 해치멀 → 해치(해치멀 제외) → 퍼글러 → 기타(나머지)<br/><br/>
+      <strong>실질 재고등급 (BJ열)</strong>
+      • <b>정상</b>: 3개월 내 입고 OR 회전율 &gt; 1.0<br/>
+      • <b>부진</b>: 회전율 0.5 ~ 1.0 주의 재고<br/>
+      • <b>악성</b>: 18개월 무실적 OR (3개월 무입고 &amp; 회전율 &lt; 0.5)
+    </div>
+
+    <!-- 좌측 하단 비교분석 버튼 영역 -->
+    <div class="sider-compare-box">
+      <div class="sider-compare-title">
+        <span>📊 기간 비교분석</span>
+        <span id="siderCompareStatusBadge" style="font-size:10px;color:#69B1FF;">대기 중</span>
+      </div>
+      <div class="sider-compare-desc" id="siderCompareDesc">
+        열 위치나 구성에 일부 차이가 있는 파일도 기본 원칙에 맞춰 자동 추출·비교합니다.
+      </div>
+      <button type="button" class="btn-sider-compare" id="btnSiderCompare" title="비교할 엑셀 파일 불러오기">
+        📂 <span>비교분석 파일 불러오기</span>
+      </button>
+      <button type="button" class="btn-sider-compare-clear" id="btnSiderCompareClear">
+        ✕ 비교분석 초기화 (닫기)
+      </button>
+      <input type="file" id="compareFileInput" accept=".xlsx,.xls" style="display:none;" />
+    </div>
+
+    <div class="ant-sider-footer">
+      <div class="ant-avatar">영업</div>
+      <div>
+        <strong style="color:#fff;display:block;">아이코닉스 영업기획</strong>
+        <span style="color:rgba(255,255,255,0.45);font-size:11px;">Executive BI Dashboard</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================= Main Workspace ======================= -->
+  <div class="ant-workspace">
+
+    <!-- 상단 글로벌 헤더 -->
+    <header class="global-header">
+      <div class="header-top">
+        <div class="header-title-area">
+          <h1>아이코닉스 영업본부 재고자산 현황 대시보드</h1>
+          <span class="period-badge" id="mainPeriodBadge">기준: 2025.03 ~ 2026.08</span>
+        </div>
+
+        <div class="conn-status">
+          <span id="envStatusPill" class="status-pill">● 연결 확인 중...</span>
+          <span id="lastUpdatedText" style="font-size:11px;color:var(--text-tertiary);"></span>
+          <button type="button" id="btnManualReload" class="btn" style="display:none;" title="서버에서 ./data.xlsx 즉시 다시 불러오기">
+            ↻ 새로고침
+          </button>
+          <label for="fileInput" class="btn btn-primary" style="cursor:pointer;margin:0;">
+            📂 기준 파일 선택 (data.xlsx)
+          </label>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;" />
+        </div>
+      </div>
+
+      <!-- 글로벌 필터 바 -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">조회 기준:</span>
+          <div class="segmented" id="segScope">
+            <button type="button" data-val="sales" class="active">영업본부 (기본)</button>
+            <button type="button" data-val="company">전사 합계</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">IP 선택:</span>
+          <select id="selGlobalIp" class="ant-select" style="min-width:175px;">
+            <option value="ALL">전체 IP (ALL)</option>
+            <option value="뽀로로">뽀로로</option>
+            <option value="타요">타요</option>
+            <option value="잔망루피">잔망루피 (잔망 포함)</option>
+            <option value="데코데코">데코데코</option>
+            <option value="해치멀">해치멀</option>
+            <option value="해치">해치 (해치멀 제외)</option>
+            <option value="퍼글러">퍼글러</option>
+            <option value="기타(나머지)">기타(나머지)</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="margin-left:auto;flex:1;min-width:220px;max-width:320px;">
+          <input type="search" id="inpGlobalSearch" class="ant-input" style="width:100%;" placeholder="전체 대시보드 품목코드/품목명 필터..." />
+        </div>
+
+        <button type="button" id="btnResetFilters" class="btn" title="모든 필터 초기화">전체 초기화</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+
+      <!-- 파일 선택 / 드래그앤드롭 안내 영역 -->
+      <div id="dropZoneContainer" style="display:none;">
+        <div id="dropZone" class="upload-zone">
+          <div style="font-size:32px;line-height:1;">📊</div>
+          <h3 id="dropZoneTitle">데이터 파일(data.xlsx)을 불러와주세요</h3>
+          <p id="dropZoneDesc">
+            현재 로컬 파일(<code>file://</code>) 모드로 실행 중이거나 서버에서 <code>./data.xlsx</code>를 찾지 못했습니다.<br/>
+            아래 버튼을 클릭하거나 <strong>재고등급현황 작성표(.xlsx)</strong> 파일을 이 영역에 드래그 &amp; 드롭하세요.
+          </p>
+          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+            <label for="fileInput" class="btn btn-primary" style="height:36px;padding:0 18px;font-size:14px;cursor:pointer;">
+              📂 data.xlsx 파일 직접 선택하기
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="errorBanner" class="alert-banner error" style="display:none;">
+        <span id="errorBannerMsg">데이터를 불러오는 중 오류가 발생했습니다.</span>
+        <label for="fileInput" class="btn" style="cursor:pointer;">파일 직접 선택</label>
+      </div>
+
+      <!-- ======================= 기간 비교분석 결과 패널 (비교 파일 로드 시 활성화) ======================= -->
+      <section id="secComparePanel" class="compare-panel" aria-label="기간 비교분석 결과">
+        <div class="compare-panel-head">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="tag tag-info" style="font-weight:700;">비교분석 활성화됨</span>
+            <strong style="font-size:14px;color:var(--text-primary);" id="compHeaderTitle">
+              비교 파일 vs 현재 기준 데이터 증감율 분석
+            </strong>
+            <span id="compMappingNote" style="font-size:11px;color:var(--text-secondary);"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" class="btn" id="btnReuploadCompare" style="height:26px;font-size:12px;">📂 다른 비교파일 선택</button>
+            <button type="button" class="btn" id="btnCloseComparePanel" style="height:26px;font-size:12px;color:var(--color-error-fg);border-color:var(--color-error-border);">✕ 비교 닫기</button>
+          </div>
+        </div>
+        <div class="compare-panel-body">
+          <div class="compare-summary-grid" id="compareSummaryGrid">
+            <!-- JS 동적 렌더링 -->
+          </div>
+          <div class="table-wrapper">
+            <table class="cross-mini-table" id="compareIpTable">
+              <!-- JS 동적 렌더링 -->
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= [Row 1: 핵심 KPI 요약 카드 (6열 그리드)] ======================= -->
+      <section id="sec-kpi" class="kpi-grid" aria-label="핵심 KPI 요약">
+        <article class="kpi-card highlight-primary">
+          <div class="kpi-top">
+            <span id="kpi1Title">영업본부 총재고금액</span>
+            <span class="kpi-icon">₩</span>
+          </div>
+          <div class="kpi-value" id="kpi1Val">-</div>
+          <div class="kpi-sub">
+            <span id="kpi1Sub1">전사 대비 -%</span>
+            <span id="kpi1Sub2" class="trend-info">- SKU</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span id="kpi2Title">영업본부 총재고수량</span>
+            <span class="kpi-icon">#</span>
+          </div>
+          <div class="kpi-value" id="kpi2Val">-</div>
+          <div class="kpi-sub">
+            <span id="kpi2Sub1">전사 수량 대비 -%</span>
+            <span id="kpi2Sub2">보유 SKU -개</span>
+          </div>
+        </article>
+
+        <article class="kpi-card highlight-danger">
+          <div class="kpi-top">
+            <span id="kpi3Title">악성/부진 재고 금액 (실질)</span>
+            <span class="kpi-icon danger">!</span>
+          </div>
+          <div class="kpi-value" id="kpi3Val" style="color:var(--color-error-fg);">-</div>
+          <div class="kpi-sub">
+            <span id="kpi3Sub1">악성 - / 부진 -</span>
+            <span id="kpi3Sub2" class="trend-up">정상 -</span>
+          </div>
+        </article>
+
+        <article class="kpi-card highlight-danger">
+          <div class="kpi-top">
+            <span id="kpi4Title">위험 재고 비중 (실질 BJ)</span>
+            <span class="kpi-icon warning">%</span>
+          </div>
+          <div class="kpi-value" id="kpi4Val">-</div>
+          <div class="kpi-sub">
+            <span id="kpi4Sub1">기존(AP) 위험비중 -</span>
+            <span id="kpi4Sub2" class="trend-up">정상→악성 -</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span id="kpi5Title">기간 재고 증감률 (%)</span>
+            <span class="kpi-icon">⇄</span>
+          </div>
+          <div class="kpi-value" id="kpi5Val">-</div>
+          <div class="kpi-sub">
+            <span id="kpi5Sub1">기초 - → 기말 -</span>
+            <span id="kpi5Sub2">영업본부 수불 기준</span>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span>평균 회전율 / 중위 경과월</span>
+            <span class="kpi-icon">⏱</span>
+          </div>
+          <div class="kpi-value" id="kpi6Val">-</div>
+          <div class="kpi-sub">
+            <span id="kpi6Sub1">평균 경과 -개월</span>
+            <span id="kpi6Sub2">입고미상 4건 제외</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- ======================= [Row 2: 재고 건전성 및 수불 흐름 진단] ======================= -->
+      <section id="sec-row2" class="row-2-grid">
+        <!-- [차트 2] 재고 등급 교차 비교 (실질 합계만 컬러+볼드, 기존 표는 볼드/컬러 취소) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>[차트 2] 재고 등급(정상·부진·악성) 교차 비교</h2>
+              <p>기존 등급(AP열 구분1) vs 실질 등급(BJ열) 백만원 단위 직접 비교 및 전체 대비 비율(%)</p>
+            </div>
+            <span class="tag tag-error" id="chart2Badge">정상→악성 전환 주의</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-box" style="height:220px;">
+              <canvas id="chartGradeCompare"></canvas>
+            </div>
+            <div>
+              <table class="cross-mini-table" aria-label="기존등급 대 실질등급 교차표">
+                <thead>
+                  <tr>
+                    <th>구분1(AP) \ 실질(BJ)</th>
+                    <th>실질 정상</th>
+                    <th>실질 부진</th>
+                    <th>실질 악성</th>
+                    <th>기존(AP) 합계</th>
+                  </tr>
+                </thead>
+                <tbody id="crossMatrixBody">
+                  <!-- JS 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+            <div class="analysis-summary-box danger" id="chart2Callout">
+              <div class="analysis-metrics-row">
+                <span>💡 <strong>핵심 리스크 괴리:</strong> 기존 '정상' 분류 중 실질 '악성/부진' 전환액</span>
+                <strong id="chart2HighlightAmt" style="color:var(--color-error-fg);">-</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- [차트 3] 기간 수불 흐름 브릿지 ('개'로만 표시 + 상단 조회기준 동적 반영) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2 id="chart3Title">[차트 3] 기간 수불 흐름 브릿지 (기초 → 입고 → 출고 → 기말)</h2>
+              <p id="chart3Desc">상단 조회 기준(영업본부/전사합계)에 따라 동적 반영되는 기간 입출고 및 기말재고 형성 명세표</p>
+            </div>
+            <span class="tag tag-info" id="chart3Badge">기초 대비 금액 -% / 수량 -%</span>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table class="flow-bridge-table" aria-label="기간 수불 흐름 브릿지 표">
+                <thead>
+                  <tr>
+                    <th style="width:16%;">수불 단계</th>
+                    <th style="width:25%;">세부 경로 (컬럼)</th>
+                    <th style="width:19%;">수량 (개)</th>
+                    <th style="width:22%;">금액 (백만원)</th>
+                    <th style="width:18%;">입·출고 내 비중</th>
+                  </tr>
+                </thead>
+                <tbody id="flowBridgeTableBody">
+                  <!-- JS 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 하단 금액 / 수량('개' 단위) 구분 증감 안내 -->
+            <div class="flow-diff-grid" id="chart3DiffGrid">
+              <!-- JS 렌더링 -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= [Row 3: 품목군/IP별 분석 및 리스크 매트릭스] ======================= -->
+      <section id="sec-row3" class="row-3-grid">
+        <!-- [차트 5 & 차트 1 탭 전환 카드] -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2 id="leftTabTitle">[차트 5] 품목군(코드 앞 3자리)별 재고 금액 및 등급 비중 Top 10</h2>
+              <p id="leftTabDesc">1) 품목코드(3·4번째) 버튼 클릭에 따라 동적 반영되는 품목군 Top 10 및 IP 복수선택 분석</p>
+            </div>
+            <div class="segmented" id="segLeftChartTab">
+              <button type="button" data-tab="chart5" class="active">[차트 5] 품목군 Top 10</button>
+              <button type="button" data-tab="chart1">[차트 1] IP별 재고 구성</button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Tab 1: [차트 5] 품목군 Top 10 -->
+            <div id="paneChart5" style="display:flex;flex-direction:column;gap:10px;height:100%;">
+              <div class="sub-filter-panel">
+                <div class="sub-filter-row">
+                  <span class="sub-filter-title">1) 품목코드(3·4번째):</span>
+                  <div class="multi-btn-group" id="c5MidGroup">
+                    <button type="button" class="multi-btn active" data-val="ALL">전체</button>
+                    <button type="button" class="multi-btn" data-val="T1">T1-완구</button>
+                    <button type="button" class="multi-btn" data-val="P1">P1-출판</button>
+                    <button type="button" class="multi-btn" data-val="T2">T2-수입완구</button>
+                    <button type="button" class="multi-btn" data-val="L1">L1-굿즈</button>
+                  </div>
+                </div>
+                <div class="sub-filter-row">
+                  <span class="sub-filter-title">2) 품목명 IP 분류:</span>
+                  <div class="multi-btn-group" id="c5IpGroup">
+                    <button type="button" class="multi-btn active" data-val="ALL">전체</button>
+                    <button type="button" class="multi-btn" data-val="뽀로로">뽀로로</button>
+                    <button type="button" class="multi-btn" data-val="타요">타요</button>
+                    <button type="button" class="multi-btn" data-val="잔망루피">잔망루피</button>
+                    <button type="button" class="multi-btn" data-val="데코데코">데코데코</button>
+                    <button type="button" class="multi-btn" data-val="해치멀">해치멀</button>
+                    <button type="button" class="multi-btn" data-val="해치">해치</button>
+                    <button type="button" class="multi-btn" data-val="퍼글러">퍼글러</button>
+                    <button type="button" class="multi-btn" data-val="기타(나머지)">기타(나머지)</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chart-box" style="height:245px;">
+                <canvas id="chartTopPrefix"></canvas>
+              </div>
+
+              <div class="analysis-summary-box" id="chart5AnalysisBox">
+                <!-- JS 동적 업데이트 -->
+              </div>
+            </div>
+
+            <!-- Tab 2: [차트 1] IP별 재고 구성 -->
+            <div id="paneChart1" style="display:none;flex-direction:column;gap:10px;height:100%;">
+              <div class="chart-box" style="height:230px;">
+                <canvas id="chartIpComposition"></canvas>
+              </div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
+                <span>📌 IP별 기본 정보 및 재고 구성 현황 (해치멀/해치 분리 · 잔망루피에 잔망 포함)</span>
+                <span style="font-size:11px;color:var(--text-tertiary);">단위: 백만원 / 만개 / 비중(%)</span>
+              </div>
+              <div class="ip-info-grid" id="ipSummaryGrid">
+                <!-- JS 렌더링 -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- [차트 4: 입고 경과기간 vs 재고회전율 리스크 매트릭스] -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>[차트 4] 입고 경과기간(BL) vs 재고회전율(BI) 리스크 매트릭스</h2>
+              <p>상단 재고등급(악성/부진/정상) 복수선택에 따른 체화 리스크 분포 및 실시간 분석 요약</p>
+            </div>
+            <span class="tag tag-warning" id="scatterNoteBadge">상위 250개 고액 SKU</span>
+          </div>
+          <div class="card-body">
+            <div class="sub-filter-panel">
+              <div class="sub-filter-row" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span class="sub-filter-title" style="min-width:auto;">재고등급 선택 (복수선택):</span>
+                  <div class="multi-btn-group" id="c4GradeGroup">
+                    <button type="button" class="multi-btn active" data-val="ALL">전체 보기</button>
+                    <button type="button" class="multi-btn active-danger" data-val="악성">● 악성 재고</button>
+                    <button type="button" class="multi-btn active-warning" data-val="부진">● 부진 재고</button>
+                    <button type="button" class="multi-btn active-success" data-val="정상">● 정상 재고</button>
+                  </div>
+                </div>
+                <span style="font-size:11px;color:var(--text-tertiary);">실질등급(BJ열) 기준</span>
+              </div>
+            </div>
+
+            <div class="chart-box" style="height:265px;">
+              <canvas id="chartRiskScatter"></canvas>
+            </div>
+
+            <div class="analysis-summary-box danger" id="chart4DynamicBox">
+              <!-- JS 동적 업데이트 -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= [차트 6] 영업본부 중점 관리 품목 상세 리스트 ======================= -->
+      <section id="sec-row4" class="card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>[차트 6] 영업본부 중점 관리 SKU 상세 명세표 (Actionable Data Table)</h2>
+            <p>품목코드(전체/T1/P1/L1/T2)·IP 복수선택(해치멀/해치 분리, 잔망 포함)·실질 재고등급·확장 검색창 및 재고증가율(%) 분석</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" id="btnExportCsv" class="btn">⬇ 현재 목록 CSV 다운로드</button>
+          </div>
+        </div>
+
+        <!-- 툴바 -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="quick-tabs" id="tableQuickTabs">
+              <button type="button" class="quick-tab active" data-qtab="ALL">
+                전체 품목 <span class="count" id="qCountAll">0</span>
+              </button>
+              <button type="button" class="quick-tab" data-qtab="DEAD_TOP50">
+                🔥 악성재고 고액 Top 50 <span class="count" id="qCountDead50">50</span>
+              </button>
+              <button type="button" class="quick-tab" data-qtab="SHIFT_NORMAL_TO_DEAD">
+                ⚠️ 정상(AP)→악성(BJ) 전환 <span class="count" id="qCountShift">0</span>
+              </button>
+            </div>
+
+            <!-- 품목코드 : 전체, T1(완구), P1(출판), L1(굿즈), T2(수입완구) -->
+            <div class="filter-group">
+              <span class="filter-label">품목코드:</span>
+              <select id="selTableCodeMid" class="ant-select" style="height:30px;padding:2px 8px;font-size:12px;">
+                <option value="ALL">전체</option>
+                <option value="T1">T1(완구)</option>
+                <option value="P1">P1(출판)</option>
+                <option value="L1">L1(굿즈)</option>
+                <option value="T2">T2(수입완구)</option>
+              </select>
+            </div>
+
+            <!-- IP 선택 (드롭다운 복수선택) -->
+            <div class="multi-dropdown" id="tableIpDropdown">
+              <button type="button" class="multi-dropdown-btn" id="btnTableIpDropdown">
+                <span>🎯 IP 선택: <b id="lblTableIpSelected">전체</b></span>
+                <span style="font-size:10px;">▼</span>
+              </button>
+              <div class="multi-dropdown-menu" id="menuTableIpDropdown">
+                <label class="multi-dropdown-item" style="border-bottom:1px solid var(--border-subtle);font-weight:600;">
+                  <input type="checkbox" value="ALL" checked /> 전체 선택
+                </label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="뽀로로" class="ip-chk" checked /> 1. 뽀로로</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="타요" class="ip-chk" checked /> 2. 타요</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="잔망루피" class="ip-chk" checked /> 3. 잔망루피 (잔망 포함)</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="데코데코" class="ip-chk" checked /> 4. 데코데코</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="해치멀" class="ip-chk" checked /> 5. 해치멀</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="해치" class="ip-chk" checked /> 6. 해치 (해치멀 제외)</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="퍼글러" class="ip-chk" checked /> 7. 퍼글러</label>
+                <label class="multi-dropdown-item"><input type="checkbox" value="기타(나머지)" class="ip-chk" checked /> 8. 기타(나머지)</label>
+              </div>
+            </div>
+
+            <!-- 재고등급 선택 (정상/부진/악성 : 실질 BJ 기준) -->
+            <div class="filter-group">
+              <span class="filter-label">재고등급(BJ):</span>
+              <div class="multi-btn-group" id="tableGradeGroup">
+                <button type="button" class="multi-btn active" data-val="ALL">전체</button>
+                <button type="button" class="multi-btn" data-val="정상">정상</button>
+                <button type="button" class="multi-btn" data-val="부진">부진</button>
+                <button type="button" class="multi-btn" data-val="악성">악성</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 검색창 가로 사이즈 2배(500px) -->
+          <div class="toolbar-right">
+            <div class="search-suggest-wrap" id="tableSearchWrap">
+              <input type="search" id="inpTableSearch" class="ant-input" style="width:100%;height:30px;font-size:12px;" placeholder="🔎 품목코드·품목명 검색 (클릭 또는 입력 시 유사 키워드 추천 안내)..." autocomplete="off" />
+              <div class="suggest-box" id="tableSuggestBox">
+                <!-- JS 유사 키워드 및 추천 SKU 렌더링 -->
+              </div>
+            </div>
+
+            <select id="selPageSize" class="ant-select" style="height:30px;padding:2px 8px;font-size:12px;">
+              <option value="20" selected>20개씩 보기</option>
+              <option value="50">50개씩 보기</option>
+              <option value="100">100개씩 보기</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 인터랙티브 데이터 테이블 -->
+        <div class="table-wrapper">
+          <table class="ant-table" id="skuTable">
+            <thead>
+              <tr>
+                <th data-sort="code">품목코드 <span class="sort-ind"></span></th>
+                <th data-sort="ip">IP분류 <span class="sort-ind"></span></th>
+                <th data-sort="name">품목명 <span class="sort-ind"></span></th>
+                <th data-sort="qty" class="num-col"><span id="thQtyLabel">영업본부수량</span> <span class="sort-ind"></span></th>
+                <th data-sort="unitPrice" class="num-col">기말단가(AL) <span class="sort-ind"></span></th>
+                <th data-sort="amt" class="num-col"><span id="thAmtLabel">영업본부금액</span> <span class="sort-ind">▼</span></th>
+                <th data-sort="incRate" class="num-col" title="(기말재고금액 - 기초재고금액) / 기초재고금액 × 100">재고증가율(기초대비) <span class="sort-ind"></span></th>
+                <th data-sort="turnover" class="num-col">회전율(BI) <span class="sort-ind"></span></th>
+                <th data-sort="gradeBJ">기존(AP) → 실질(BJ) <span class="sort-ind"></span></th>
+                <th data-sort="months">최종입고 (경과월) <span class="sort-ind"></span></th>
+              </tr>
+            </thead>
+            <tbody id="skuTableBody">
+              <!-- JS 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div id="tableSummaryInfo">총 0개 품목 중 0 - 0 표시</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button type="button" id="btnPrevPage" class="btn" style="height:28px;padding:0 10px;">◀ 이전</button>
+            <span id="pageIndicator" style="font-weight:600;padding:0 8px;">1 / 1</span>
+            <button type="button" id="btnNextPage" class="btn" style="height:28px;padding:0 10px;">다음 ▶</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     1. 상수 및 데이터 연결 설정 (필수 규칙 준수)
+     ========================================================================== */
+  const DATA_URL = './data.xlsx';
+
+  const IP_PRIORITY_LIST = [
+    '뽀로로',
+    '타요',
+    '잔망루피',
+    '데코데코',
+    '해치멀',
+    '해치',
+    '퍼글러',
+    '기타(나머지)'
+  ];
+
+  const IP_META_DESC = {
+    '뽀로로': '대표 영유아 IP (완구·출판·생활)',
+    '타요': '핵심 모빌리티 완구·출판 주력 IP',
+    '잔망루피': 'MZ·캐릭터 굿즈 및 봉제 ("잔망" 키워드 통합)',
+    '데코데코': '여아 DIY·만들기·문구/스퀴시 주력',
+    '해치멀': '수입 여아 피규어/서프라이즈 ("해치멀" 전용)',
+    '해치': '자사/기획 캐릭터 완구·굿즈 ("해치멀" 제외)',
+    '퍼글러': '인기 수입 봉제/몬스터 키링·인형',
+    '기타(나머지)': '기타 캐릭터·일반완구·도서·기타상품'
+  };
+
+  const PREFIX_NAME_MAP = {
+    'TYT': '타요 완구 (TYT)',
+    'EET': '수입/상품 완구 (EET)',
+    'PRT': '뽀로로 완구 (PRT)',
+    'PRP': '뽀로로 출판 (PRP)',
+    'DCT': '데코데코 완구 (DCT)',
+    'PRL': '뽀로로/루피 굿즈 (PRL)',
+    'TYP': '타요 출판 (TYP)',
+    'TYX': '타요 기획/기타 (TYX)',
+    'DCX': '데코데코 기타 (DCX)',
+    'PRM': '뽀로로 MD (PRM)',
+    'HCT': '해치 완구 (HCT)',
+    'FGL': '퍼글러 굿즈 (FGL)',
+    'EEP': '상품 출판/문구 (EEP)',
+    'FGM': '퍼글러 기획 (FGM)',
+    'DCP': '데코데코 출판 (DCP)',
+    'EEM': '상품 MD (EEM)',
+    'EEL': '상품 굿즈 (EEL)',
+    'HCP': '해치 출판 (HCP)',
+    'TYM': '타요 MD (TYM)',
+    'PRX': '뽀로로 기타 (PRX)',
+    'HCL': '해치 굿즈 (HCL)',
+    'TPP': '티티체리 출판 (TPP)',
+    'TPT': '티티체리 완구 (TPT)'
+  };
+
+  const SALES_DEPT_CHAR3_SET = new Set(['T', 'P', 'L', 'M', 'X']);
+
+  // 전역 상태 관리
+  const state = {
+    rawItems: [],
+    mainPeriodLabel: '2025.03 ~ 2026.08',
+
+    // 비교분석 대상 데이터 상태
+    compData: null,
+
+    scope: 'sales',
+    globalIp: 'ALL',
+    globalSearch: '',
+
+    c5Mids: new Set(),
+    c5Ips: new Set(),
+
+    c4Grades: new Set(['악성', '부진', '정상']),
+
+    quickTab: 'ALL',
+    tableCodeMid: 'ALL',
+    tableIps: new Set(IP_PRIORITY_LIST),
+    tableGrades: new Set(),
+    tableSearch: '',
+
+    leftTab: 'chart5',
+    sortKey: 'amt',
+    sortDir: 'desc',
+    page: 1,
+    pageSize: 20,
+    midnightTimer: null
+  };
+
+  const charts = {
+    gradeCompare: null,
+    topPrefix: null,
+    ipComp: null,
+    riskScatter: null
+  };
+
+  /* ==========================================================================
+     2. IP 분류 함수 (해치멀/해치 완전 분리 + 잔망루피에 '잔망' 포함)
+     ========================================================================== */
+  function classifyIpByName(nameStr) {
+    const s = String(nameStr || '').trim();
+    if (!s) return '기타(나머지)';
+
+    // 우선순위: 뽀로로 -> 타요 -> 잔망루피(잔망 포함) -> 데코데코 -> 해치멀 -> 해치(해치멀 제외) -> 퍼글러 -> 기타(나머지)
+    if (s.includes('뽀로로')) return '뽀로로';
+    if (s.includes('타요')) return '타요';
+    if (s.includes('잔망루피') || s.includes('잔망')) return '잔망루피';
+    if (s.includes('데코데코')) return '데코데코';
+
+    // "해치멀"로 구성된 제품은 "해치멀"에만 포함하며, "해치"에는 "해치멀"을 절대 포함하지 않음
+    if (s.includes('해치멀')) return '해치멀';
+    const withoutHaechimals = s.replace(/해치멀/g, '');
+    if (withoutHaechimals.includes('해치')) return '해치';
+
+    if (s.includes('퍼글러')) return '퍼글러';
+    return '기타(나머지)';
+  }
+
+  function toNum(v) {
+    if (v === null || v === undefined || v === '') return 0;
+    if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+    const cleaned = String(v).replace(/,/g, '').trim();
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function extractPeriodLabel(fileName, sheetTitleCell) {
+    const fn = String(fileName || '');
+    const rangeMatch = fn.match(/(20\d{2}[.\-_]\d{1,2}\s*~\s*20\d{2}[.\-_]\d{1,2})/);
+    if (rangeMatch) return rangeMatch[1];
+
+    const ymMatch = fn.match(/(20\d{2}[.\-_]\d{1,2})/);
+    if (ymMatch) return ymMatch[1].replace(/[-_]/g, '.');
+
+    const cellStr = String(sheetTitleCell || '');
+    const parenMatch = cellStr.match(/\(([^)]+)\)/);
+    if (parenMatch) return parenMatch[1].replace('현재', '').trim();
+
+    return fn.replace(/\.xlsx?$/i, '') || '비교 기간';
+  }
+
+  function formatMillion(val, digits = 1) {
+    const m = val / 1e6;
+    return m.toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits }) + '백만';
+  }
+
+  function formatEok(val, digits = 1) {
+    const abs = Math.abs(val);
+    if (abs >= 1e8) {
+      return (val / 1e8).toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits }) + '억';
+    }
+    if (abs >= 1e6) {
+      return (val / 1e6).toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '백만';
+    }
+    return Math.round(val).toLocaleString('ko-KR') + '원';
+  }
+
+  function formatManQty(val, digits = 1) {
+    return (val / 1e4).toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits }) + '만개';
+  }
+
+  function formatExactCount(val) {
+    return Math.round(val).toLocaleString('ko-KR') + '개';
+  }
+
+  function formatQty(val) {
+    const abs = Math.abs(val);
+    if (abs >= 1e4) {
+      return (val / 1e4).toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '만개';
+    }
+    return Math.round(val).toLocaleString('ko-KR') + '개';
+  }
+
+  function parseExcelDate(val) {
+    if (!val) return null;
+    if (val instanceof Date && !isNaN(val)) {
+      if (val.getFullYear() <= 1905) return null;
+      return val.toISOString().slice(0, 10);
+    }
+    if (typeof val === 'number') {
+      if (val <= 100) return null;
+      const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+      return !isNaN(d) ? d.toISOString().slice(0, 10) : null;
+    }
+    const str = String(val).trim();
+    if (!str || (str.includes('00:00:00') && str.length <= 10) || str === '0') return null;
+    const m = str.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+    if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    return null;
+  }
+
+  function normalizeGrade(g) {
+    if (!g) return '';
+    const s = String(g).trim();
+    if (s.includes('정상')) return '정상';
+    if (s.includes('부진')) return '부진';
+    if (s.includes('악성')) return '악성';
+    return '';
+  }
+
+  /* ==========================================================================
+     3. 동적 컬럼 탐색 및 기본 원칙 기반 워크북 파서
+     ========================================================================== */
+  function detectDynamicColumnMap(rows) {
+    const colMap = {
+      headerEndRow: 8,
+      account: 0,
+      code: 1,
+      name: 2,
+      begQty: 3,
+      begPrice: 4,
+      begAmt: 5,
+      inPurchaseQty: 6,
+      inPurchaseAmt: 8,
+      inOutsourceQty: 9,
+      inOutsourceAmt: 11,
+      inTransferQty: 12,
+      inTransferAmt: 14,
+      inTotalQty: 18,
+      inTotalAmt: 20,
+      outSalesQty: 21,
+      outSalesAmt: 23,
+      outOutsourceQty: 24,
+      outOutsourceAmt: 26,
+      outTransferQty: 27,
+      outTransferAmt: 29,
+      outTotalQty: 33,
+      outTotalAmt: 35,
+      endCompQty: 36,
+      unitPrice: 37,
+      endCompAmt: 38,
+      gradeAP: 41,
+      amtSales: 47,
+      qtySales: 53,
+      turnover: 60,
+      gradeBJ: 61,
+      lastInDate: 62,
+      months: 63,
+      isCustomDetected: false,
+      refDate: new Date(2026, 7, 31)
+    };
+
+    let mainHeaderRowIdx = -1;
+    for (let r = 0; r < Math.min(15, rows.length); r++) {
+      const row = rows[r];
+      if (!row) continue;
+      const rowStrs = row.map(c => String(c || '').replace(/\s+/g, ''));
+      const hasCodeCol = rowStrs.some(s => s === '품목' || s === '품목코드' || s === '상품코드' || s === 'SKU');
+      const hasNameCol = rowStrs.some(s => s.includes('품목명') || s.includes('상품명') || s.includes('제품명'));
+      if (hasCodeCol && hasNameCol) {
+        mainHeaderRowIdx = r;
+        break;
+      }
+    }
+
+    if (mainHeaderRowIdx === -1) {
+      return colMap;
+    }
+
+    colMap.headerEndRow = mainHeaderRowIdx;
+    const hMain = rows[mainHeaderRowIdx] || [];
+    const hSub1 = mainHeaderRowIdx >= 1 ? (rows[mainHeaderRowIdx - 1] || []) : [];
+    const hSub2 = mainHeaderRowIdx >= 2 ? (rows[mainHeaderRowIdx - 2] || []) : [];
+
+    const maxCols = Math.max(hMain.length, hSub1.length, hSub2.length, 65);
+    let curTopGroup = '';
+    let curMidGroup = '';
+
+    const salesColCandidates = [];
+    const gradeColCandidates = [];
+
+    for (let c = 0; c < maxCols; c++) {
+      const rawTop = String(hSub2[c] || '').replace(/\s+/g, '');
+      const rawMid = String(hSub1[c] || '').replace(/\s+/g, '');
+      const rawBot = String(hMain[c] || '').replace(/\s+/g, '');
+
+      if (rawTop) curTopGroup = rawTop;
+      if (rawMid && isNaN(Number(rawMid))) curMidGroup = rawMid;
+
+      if (hMain[c] instanceof Date && !isNaN(hMain[c])) {
+        colMap.refDate = hMain[c];
+      }
+
+      if (rawBot === '품목계정' || rawTop === '품목계정') colMap.account = c;
+      else if (rawBot === '품목' || rawBot === '품목코드' || rawBot === '상품코드') colMap.code = c;
+      else if (rawBot.includes('품목명') || rawBot.includes('상품명')) colMap.name = c;
+
+      if (curTopGroup.includes('기초') || rawBot.includes('기초재고')) {
+        if (rawBot === '수량' || rawBot === '기초재고' || rawBot === '기초수량') colMap.begQty = c;
+        else if (rawBot === '단가' || rawBot === '기초단가') colMap.begPrice = c;
+        else if (rawBot === '금액' || rawBot === '기초금액') colMap.begAmt = c;
+      } else if (curTopGroup.includes('입고') || rawBot.includes('입고')) {
+        if (curMidGroup.includes('구매')) {
+          if (rawBot === '수량') colMap.inPurchaseQty = c;
+          else if (rawBot === '금액') colMap.inPurchaseAmt = c;
+        } else if (curMidGroup.includes('외주')) {
+          if (rawBot === '수량') colMap.inOutsourceQty = c;
+          else if (rawBot === '금액') colMap.inOutsourceAmt = c;
+        } else if (curMidGroup.includes('대체') && !curMidGroup.includes('기타')) {
+          if (rawBot === '수량') colMap.inTransferQty = c;
+          else if (rawBot === '금액') colMap.inTransferAmt = c;
+        } else if (curMidGroup.includes('합계') || rawMid !== '') {
+          if (rawBot === '수량') colMap.inTotalQty = c;
+          else if (rawBot === '금액') colMap.inTotalAmt = c;
+        } else if (rawBot === '입고량' || rawBot === '입고수량') {
+          colMap.inTotalQty = c;
+        } else if (rawBot === '입고금액') {
+          colMap.inTotalAmt = c;
+        }
+      } else if (curTopGroup.includes('출고') || rawBot.includes('출고')) {
+        if (curMidGroup.includes('매출')) {
+          if (rawBot === '수량') colMap.outSalesQty = c;
+          else if (rawBot === '금액') colMap.outSalesAmt = c;
+        } else if (curMidGroup.includes('외주')) {
+          if (rawBot === '수량') colMap.outOutsourceQty = c;
+          else if (rawBot === '금액') colMap.outOutsourceAmt = c;
+        } else if (curMidGroup.includes('대체') && !curMidGroup.includes('기타')) {
+          if (rawBot === '수량') colMap.outTransferQty = c;
+          else if (rawBot === '대체' || rawBot === '금액') colMap.outTransferAmt = c;
+        } else if (curMidGroup.includes('합계')) {
+          if (rawBot === '수량') colMap.outTotalQty = c;
+          else if (rawBot === '금액') colMap.outTotalAmt = c;
+        } else if (rawBot === '출고량' || rawBot === '출고수량') {
+          colMap.outTotalQty = c;
+        } else if (rawBot === '출고금액') {
+          colMap.outTotalAmt = c;
+        }
+      } else if (curTopGroup.includes('기말') || rawBot.includes('기말재고')) {
+        if ((rawBot === '수량' || rawBot === '기말재고' || rawBot === '기말수량') && c < 45) colMap.endCompQty = c;
+        else if (rawBot === '단가' && c < 45) colMap.unitPrice = c;
+        else if (rawBot === '금액' && c < 45) colMap.endCompAmt = c;
+      }
+
+      if (rawBot.includes('영업본부')) {
+        salesColCandidates.push({ col: c, mid: curMidGroup });
+      }
+
+      if (rawBot.includes('회전율')) colMap.turnover = c;
+      if (rawBot === '구분1' || rawBot.includes('재고등급(사업부)')) colMap.gradeAP = c;
+      if (rawBot === '구분' || rawBot.includes('재고등급(경영지원)') || rawBot === '실질등급') {
+        gradeColCandidates.push(c);
+      }
+      if (rawBot.includes('최종입고') || rawBot.includes('입고일')) {
+        colMap.lastInDate = c;
+        if (c + 1 < maxCols) colMap.months = c + 1;
+      }
+      if (rawBot.includes('경과')) {
+        colMap.months = c;
+      }
+    }
+
+    if (salesColCandidates.length >= 2) {
+      colMap.amtSales = salesColCandidates[0].col;
+      colMap.qtySales = salesColCandidates[1].col;
+    } else if (salesColCandidates.length === 1) {
+      const sc = salesColCandidates[0];
+      if (sc.mid.includes('수량')) colMap.qtySales = sc.col;
+      else colMap.amtSales = sc.col;
+    }
+
+    if (gradeColCandidates.length > 0) {
+      colMap.gradeBJ = gradeColCandidates[gradeColCandidates.length - 1];
+    }
+
+    colMap.isCustomDetected = true;
+    return colMap;
+  }
+
+  function evaluateFundamentalGradeBJ(endQty, gradeAP, months, turnover, isMissingDate) {
+    if (endQty <= 0) return '정상';
+    if (gradeAP === '악성') return '악성';
+    const m = isMissingDate ? 36 : months;
+    if (m > 3 && turnover < 0.5) return '악성';
+    if ((gradeAP === '정상' && m <= 3) || turnover > 1.0) return '정상';
+    return '부진';
+  }
+
+  function extractDatasetFromBuffer(arrayBuffer, fileName) {
+    const wb = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+
+    let targetSheetName = wb.SheetNames.find(n => n.includes('수불부'));
+    if (!targetSheetName) {
+      let maxRows = 0;
+      wb.SheetNames.forEach(n => {
+        if (n.includes('참고') || n.toLowerCase().includes('summary')) return;
+        const rArr = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: null });
+        if (rArr.length > maxRows) {
+          maxRows = rArr.length;
+          targetSheetName = n;
+        }
+      });
+      if (!targetSheetName) targetSheetName = wb.SheetNames[0];
+    }
+
+    const ws = wb.Sheets[targetSheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+    if (!rows || rows.length < 5) {
+      throw new Error('시트에서 유효한 데이터 행을 찾을 수 없습니다.');
+    }
+
+    const titleCell = (rows[0] && rows[0][0]) ? rows[0][0] : (rows[1] && rows[1][1] ? rows[1][1] : '');
+    const periodLabel = extractPeriodLabel(fileName, titleCell);
+    const cm = detectDynamicColumnMap(rows);
+
+    const items = [];
+    const skuRegex = /^[A-Z]{2,4}\d{4,8}$/i;
+
+    for (let i = cm.headerEndRow + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r) continue;
+
+      const rawAcc = r[cm.account] !== null && r[cm.account] !== undefined ? String(r[cm.account]).trim() : '';
+      const code = r[cm.code] !== null && r[cm.code] !== undefined ? String(r[cm.code]).trim() : '';
+      const name = r[cm.name] !== null && r[cm.name] !== undefined ? String(r[cm.name]).trim() : '';
+
+      if (!code || !name) continue;
+      if (rawAcc.includes('합계') || rawAcc.includes('합 계') || code.includes('합계') || name.includes('합계')) continue;
+
+      const isStandardAccount = (rawAcc === '제품' || rawAcc === '상품');
+      const isSkuCodePattern = skuRegex.test(code);
+      if (!isStandardAccount && !isSkuCodePattern) continue;
+
+      const account = isStandardAccount ? rawAcc : (code.slice(3, 4) === '2' ? '상품' : '제품');
+      const prefix = code.slice(0, 3).toUpperCase();
+      const codeMid = code.slice(2, 4).toUpperCase();
+      const char3 = code.slice(2, 3).toUpperCase();
+      const ip = classifyIpByName(name);
+
+      let unitPrice = toNum(r[cm.unitPrice]);
+      let begQty = toNum(r[cm.begQty]);
+      let begAmt = toNum(r[cm.begAmt]);
+      if (begAmt === 0 && begQty > 0 && unitPrice > 0) begAmt = begQty * unitPrice;
+
+      let inPurchaseQty = toNum(r[cm.inPurchaseQty]);
+      let inPurchaseAmt = toNum(r[cm.inPurchaseAmt]);
+      let inOutsourceQty = toNum(r[cm.inOutsourceQty]);
+      let inOutsourceAmt = toNum(r[cm.inOutsourceAmt]);
+      let inTransferQty = toNum(r[cm.inTransferQty]);
+      let inTransferAmt = toNum(r[cm.inTransferAmt]);
+
+      let inTotalQty = toNum(r[cm.inTotalQty]);
+      let inTotalAmt = toNum(r[cm.inTotalAmt]);
+      if (inTotalQty === 0 && (inPurchaseQty + inOutsourceQty + inTransferQty) > 0) {
+        inTotalQty = inPurchaseQty + inOutsourceQty + inTransferQty;
+      }
+      if (inTotalAmt === 0 && (inPurchaseAmt + inOutsourceAmt + inTransferAmt) > 0) {
+        inTotalAmt = inPurchaseAmt + inOutsourceAmt + inTransferAmt;
+      }
+
+      let outSalesQty = toNum(r[cm.outSalesQty]);
+      let outSalesAmt = toNum(r[cm.outSalesAmt]);
+      let outOutsourceQty = toNum(r[cm.outOutsourceQty]);
+      let outOutsourceAmt = toNum(r[cm.outOutsourceAmt]);
+      let outTransferQty = toNum(r[cm.outTransferQty]);
+      let outTransferAmt = toNum(r[cm.outTransferAmt]);
+
+      let outTotalQty = toNum(r[cm.outTotalQty]);
+      let outTotalAmt = toNum(r[cm.outTotalAmt]);
+      if (outTotalQty === 0 && (outSalesQty + outOutsourceQty + outTransferQty) > 0) {
+        outTotalQty = outSalesQty + outOutsourceQty + outTransferQty;
+      }
+      if (outTotalAmt === 0 && (outSalesAmt + outOutsourceAmt + outTransferAmt) > 0) {
+        outTotalAmt = outSalesAmt + outOutsourceAmt + outTransferAmt;
+      }
+
+      let endCompQty = toNum(r[cm.endCompQty]);
+      let endCompAmt = toNum(r[cm.endCompAmt]);
+      if (unitPrice === 0 && endCompQty > 0 && endCompAmt > 0) {
+        unitPrice = endCompAmt / endCompQty;
+      }
+      if (endCompAmt === 0 && endCompQty > 0 && unitPrice > 0) {
+        endCompAmt = endCompQty * unitPrice;
+      }
+
+      let rawAmtSales = r[cm.amtSales];
+      let rawQtySales = r[cm.qtySales];
+      let amtSales = toNum(rawAmtSales);
+      let qtySales = toNum(rawQtySales);
+
+      if (rawAmtSales === undefined && rawQtySales === undefined) {
+        if (SALES_DEPT_CHAR3_SET.has(char3)) {
+          qtySales = endCompQty;
+          amtSales = endCompAmt;
+        }
+      } else {
+        if (amtSales === 0 && qtySales > 0 && unitPrice > 0) amtSales = qtySales * unitPrice;
+        if (qtySales === 0 && amtSales > 0 && unitPrice > 0) qtySales = Math.round(amtSales / unitPrice);
+      }
+
+      const lastInDate = parseExcelDate(r[cm.lastInDate]);
+      let rawMonths = toNum(r[cm.months]);
+      if (rawMonths === 0 && lastInDate) {
+        const dIn = new Date(lastInDate);
+        const dRef = cm.refDate || new Date(2026, 7, 31);
+        rawMonths = Math.max(1, (dRef.getFullYear() - dIn.getFullYear()) * 12 + (dRef.getMonth() - dIn.getMonth()) + 1);
+      }
+      const isMissingDate = (!lastInDate || rawMonths >= 1000);
+
+      let turnover = toNum(r[cm.turnover]);
+      if (turnover === 0 && outSalesQty > 0 && (begQty + endCompQty) > 0) {
+        turnover = Math.max(0, Math.round((outSalesQty / ((begQty + endCompQty) / 2)) * 10) / 10);
+      }
+
+      let gradeAP = normalizeGrade(r[cm.gradeAP]);
+      let gradeBJ = normalizeGrade(r[cm.gradeBJ]);
+      if (!gradeAP && !gradeBJ) {
+        gradeAP = '정상';
+        gradeBJ = evaluateFundamentalGradeBJ(endCompQty, gradeAP, rawMonths, turnover, isMissingDate);
+      } else if (!gradeBJ) {
+        gradeBJ = evaluateFundamentalGradeBJ(endCompQty, gradeAP || '정상', rawMonths, turnover, isMissingDate);
+      } else if (!gradeAP) {
+        gradeAP = gradeBJ;
+      }
+
+      const salesWeightQty = endCompQty > 0
+        ? Math.min(1, Math.max(0, qtySales / endCompQty))
+        : (SALES_DEPT_CHAR3_SET.has(char3) ? 1 : 0);
+      const salesWeightAmt = endCompAmt > 0
+        ? Math.min(1, Math.max(0, amtSales / endCompAmt))
+        : (SALES_DEPT_CHAR3_SET.has(char3) ? 1 : 0);
+
+      let incRate = 0;
+      let isNewStock = false;
+      if (begAmt > 0) {
+        incRate = ((endCompAmt - begAmt) / begAmt) * 100;
+      } else if (endCompAmt > 0) {
+        incRate = 999999;
+        isNewStock = true;
+      }
+
+      items.push({
+        account, code, name, prefix, codeMid, char3, ip,
+        begQty, begAmt,
+        inPurchaseQty, inPurchaseAmt, inOutsourceQty, inOutsourceAmt, inTransferQty, inTransferAmt, inTotalQty, inTotalAmt,
+        outSalesQty, outSalesAmt, outOutsourceQty, outOutsourceAmt, outTransferQty, outTransferAmt, outTotalQty, outTotalAmt,
+        endCompQty, unitPrice, endCompAmt,
+        amtSales, qtySales,
+        salesWeightQty, salesWeightAmt,
+        gradeAP, gradeBJ,
+        turnover, lastInDate, months: rawMonths, isMissingDate, incRate, isNewStock
+      });
+    }
+
+    if (items.length === 0) {
+      throw new Error('유효한 품목(SKU) 데이터를 추출하지 못했습니다.');
+    }
+
+    return {
+      fileName,
+      periodLabel,
+      sheetName: targetSheetName,
+      items
+    };
+  }
+
+  function parseWorkbookBuffer(arrayBuffer, sourceLabel, fileName = 'data.xlsx') {
+    try {
+      const parsed = extractDatasetFromBuffer(arrayBuffer, fileName);
+      state.rawItems = parsed.items;
+      state.mainPeriodLabel = parsed.periodLabel;
+
+      document.getElementById('mainPeriodBadge').textContent = `기준: ${parsed.periodLabel}`;
+      hideErrorAndUploadZone();
+      updateLastUpdatedTime(sourceLabel);
+      renderAll();
+    } catch (err) {
+      console.error('엑셀 파싱 오류:', err);
+      showErrorBanner('엑셀 파일 파싱 중 오류가 발생했습니다: ' + err.message);
+    }
+  }
+
+  function parseCompareWorkbookBuffer(arrayBuffer, fileName) {
+    try {
+      const parsed = extractDatasetFromBuffer(arrayBuffer, fileName);
+      state.compData = parsed;
+
+      document.getElementById('siderCompareStatusBadge').textContent = '비교 중';
+      document.getElementById('siderCompareStatusBadge').style.color = '#52C41A';
+      document.getElementById('siderCompareDesc').innerHTML =
+        `비교 파일: <b style="color:#fff;">${escapeHtml(fileName)}</b><br/>추출 기간: <b style="color:#69B1FF;">${escapeHtml(parsed.periodLabel)}</b> (${parsed.items.length.toLocaleString()}종)`;
+      document.getElementById('btnSiderCompareClear').style.display = 'flex';
+
+      renderAll();
+      document.getElementById('secComparePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      alert('비교분석 파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+    }
+  }
+
+  /* ==========================================================================
+     4. 공통 데이터 조회 헬퍼 (영업본부 vs 전사합계)
+     ========================================================================== */
+  function getItemAmt(item) {
+    return state.scope === 'sales' ? item.amtSales : item.endCompAmt;
+  }
+
+  function getItemQty(item) {
+    return state.scope === 'sales' ? item.qtySales : item.endCompQty;
+  }
+
+  function getItemFlow(item) {
+    if (state.scope === 'company') {
+      return {
+        begQty: item.begQty,
+        begAmt: item.begAmt,
+        inPurchaseQty: item.inPurchaseQty,
+        inPurchaseAmt: item.inPurchaseAmt,
+        inOutsourceQty: item.inOutsourceQty,
+        inOutsourceAmt: item.inOutsourceAmt,
+        inTransferQty: item.inTransferQty,
+        inTransferAmt: item.inTransferAmt,
+        inTotalQty: item.inTotalQty,
+        inTotalAmt: item.inTotalAmt,
+        outSalesQty: item.outSalesQty,
+        outSalesAmt: item.outSalesAmt,
+        outOutsourceQty: item.outOutsourceQty,
+        outOutsourceAmt: item.outOutsourceAmt,
+        outTransferQty: item.outTransferQty,
+        outTransferAmt: item.outTransferAmt,
+        outTotalQty: item.outTotalQty,
+        outTotalAmt: item.outTotalAmt,
+        endQty: item.endCompQty,
+        endAmt: item.endCompAmt
+      };
+    } else {
+      const wQ = item.salesWeightQty;
+      const wA = item.salesWeightAmt;
+      return {
+        begQty: item.begQty * wQ,
+        begAmt: item.begAmt * wA,
+        inPurchaseQty: item.inPurchaseQty * wQ,
+        inPurchaseAmt: item.inPurchaseAmt * wA,
+        inOutsourceQty: item.inOutsourceQty * wQ,
+        inOutsourceAmt: item.inOutsourceAmt * wA,
+        inTransferQty: item.inTransferQty * wQ,
+        inTransferAmt: item.inTransferAmt * wA,
+        inTotalQty: item.inTotalQty * wQ,
+        inTotalAmt: item.inTotalAmt * wA,
+        outSalesQty: item.outSalesQty * wQ,
+        outSalesAmt: item.outSalesAmt * wA,
+        outOutsourceQty: item.outOutsourceQty * wQ,
+        outOutsourceAmt: item.outOutsourceAmt * wA,
+        outTransferQty: item.outTransferQty * wQ,
+        outTransferAmt: item.outTransferAmt * wA,
+        outTotalQty: item.outTotalQty * wQ,
+        outTotalAmt: item.outTotalAmt * wA,
+        endQty: item.qtySales,
+        endAmt: item.amtSales
+      };
+    }
+  }
+
+  function getGlobalFilteredItems(sourceItems = state.rawItems) {
+    const q = state.globalSearch.trim().toLowerCase();
+    return sourceItems.filter(it => {
+      if (state.globalIp !== 'ALL' && it.ip !== state.globalIp) return false;
+      if (q) {
+        if (!it.code.toLowerCase().includes(q) && !it.name.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  /* ==========================================================================
+     5. 전체 대시보드 렌더링
+     ========================================================================== */
+  function renderAll() {
+    if (!state.rawItems || state.rawItems.length === 0) return;
+    const filtered = getGlobalFilteredItems(state.rawItems);
+    document.getElementById('navSkuCount').textContent = filtered.length.toLocaleString('ko-KR');
+
+    renderComparePanel(filtered);
+    renderKPIs(filtered);
+    renderChart2GradeCompare(filtered);
+    renderChart3FlowTable(filtered);
+    renderChart5TopPrefix(filtered);
+    renderChart1IpComposition(filtered);
+    renderChart4RiskScatter(filtered);
+    renderDataTable(filtered);
+  }
+
+  /* ==========================================================================
+     6. 기간 비교분석 결과 패널 렌더링
+     ========================================================================== */
+  function renderComparePanel(curFiltered) {
+    const panel = document.getElementById('secComparePanel');
+    if (!state.compData) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+
+    const compFiltered = getGlobalFilteredItems(state.compData.items);
+    const scopeLabel = state.scope === 'sales' ? '영업본부' : '전사 합계';
+
+    document.getElementById('compHeaderTitle').textContent =
+      `[${scopeLabel}] 비교 기간 (${state.compData.periodLabel}) vs 현재 기준 (${state.mainPeriodLabel}) 증감율 비교 분석`;
+    document.getElementById('compMappingNote').textContent =
+      `(비교 시트: ${state.compData.sheetName} · 추출 ${compFiltered.length.toLocaleString()} SKU vs 현재 ${curFiltered.length.toLocaleString()} SKU)`;
+
+    const calcMetrics = (list) => {
+      let amt = 0, qty = 0, norm = 0, slow = 0, dead = 0;
+      const ipMap = {};
+      IP_PRIORITY_LIST.forEach(ip => { ipMap[ip] = { amt: 0, qty: 0 }; });
+
+      list.forEach(it => {
+        const a = getItemAmt(it);
+        const q = getItemQty(it);
+        amt += a;
+        qty += q;
+        if (it.gradeBJ === '정상') norm += a;
+        else if (it.gradeBJ === '부진') slow += a;
+        else if (it.gradeBJ === '악성') dead += a;
+
+        const targetIp = ipMap[it.ip] ? it.ip : '기타(나머지)';
+        ipMap[targetIp].amt += a;
+        ipMap[targetIp].qty += q;
+      });
+      return { amt, qty, norm, slow, dead, ipMap };
+    };
+
+    const curM = calcMetrics(curFiltered);
+    const cmpM = calcMetrics(compFiltered);
+
+    const formatDeltaHtml = (curVal, cmpVal, isQty = false) => {
+      const diff = curVal - cmpVal;
+      const pct = cmpVal > 0 ? ((diff / cmpVal) * 100).toFixed(1) : (curVal > 0 ? '신규' : '0.0');
+      const sign = diff > 0 ? '+' : '';
+      const cls = diff > 0 ? 'delta-plus' : (diff < 0 ? 'delta-minus' : 'delta-neutral');
+      const diffUnit = isQty ? formatExactCount(diff) : formatMillion(diff, 1) + '원';
+      const pctText = pct === '신규' ? '신규 순증' : `${sign}${pct}%`;
+      return `<span class="${cls}">${sign}${diffUnit} (${pctText})</span>`;
+    };
+
+    const summaryCards = [
+      { lbl: '총 재고금액 (백만원)', cmp: formatMillion(cmpM.amt, 1), cur: formatMillion(curM.amt, 1), delta: formatDeltaHtml(curM.amt, cmpM.amt, false) },
+      { lbl: '총 재고수량 (개)', cmp: formatExactCount(cmpM.qty), cur: formatExactCount(curM.qty), delta: formatDeltaHtml(curM.qty, cmpM.qty, true) },
+      { lbl: '실질 정상 재고금액', cmp: formatMillion(cmpM.norm, 1), cur: formatMillion(curM.norm, 1), delta: formatDeltaHtml(curM.norm, cmpM.norm, false) },
+      { lbl: '실질 부진 재고금액', cmp: formatMillion(cmpM.slow, 1), cur: formatMillion(curM.slow, 1), delta: formatDeltaHtml(curM.slow, cmpM.slow, false) },
+      { lbl: '실질 악성 재고금액', cmp: formatMillion(cmpM.dead, 1), cur: formatMillion(curM.dead, 1), delta: formatDeltaHtml(curM.dead, cmpM.dead, false) }
+    ];
+
+    document.getElementById('compareSummaryGrid').innerHTML = summaryCards.map(c => `
+      <div class="compare-stat-box">
+        <div class="lbl">${c.lbl}</div>
+        <div class="vals">${c.cmp} → <span style="color:var(--color-primary-600);">${c.cur}</span></div>
+        <div class="delta">${c.delta}</div>
+      </div>
+    `).join('');
+
+    const ipRowsHtml = IP_PRIORITY_LIST.map(ip => {
+      const cA = cmpM.ipMap[ip].amt, nA = curM.ipMap[ip].amt;
+      const cQ = cmpM.ipMap[ip].qty, nQ = curM.ipMap[ip].qty;
+      return `
+        <tr>
+          <td style="text-align:center;font-weight:600;background:var(--bg-table-head);">${ip}</td>
+          <td>${formatMillion(cA, 1)}원</td>
+          <td style="font-weight:600;">${formatMillion(nA, 1)}원</td>
+          <td>${formatDeltaHtml(nA, cA, false)}</td>
+          <td>${formatExactCount(cQ)}</td>
+          <td style="font-weight:600;">${formatExactCount(nQ)}</td>
+          <td>${formatDeltaHtml(nQ, cQ, true)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    document.getElementById('compareIpTable').innerHTML = `
+      <thead>
+        <tr>
+          <th>IP 분류</th>
+          <th>비교기간 금액 (${escapeHtml(state.compData.periodLabel)})</th>
+          <th>현재기준 금액 (${escapeHtml(state.mainPeriodLabel)})</th>
+          <th>금액 증감 (증감율)</th>
+          <th>비교기간 수량 (개)</th>
+          <th>현재기준 수량 (개)</th>
+          <th>수량 증감 (증감율)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ipRowsHtml}
+      </tbody>
+    `;
+  }
+
+  /* ==========================================================================
+     7. Row 1: 핵심 KPI 요약 카드 6종
+     ========================================================================== */
+  function renderKPIs(filtered) {
+    const isSales = state.scope === 'sales';
+    const scopeLabel = isSales ? '영업본부' : '전사';
+
+    let totalAmt = 0, totalQty = 0, compTotalAmt = 0, compTotalQty = 0, activeSkuCount = 0;
+    let normalAmt = 0, slowAmt = 0, deadAmt = 0;
+    let apRiskAmt = 0, shiftNormalToDeadAmt = 0;
+    let begSum = 0, endSum = 0;
+    const validTurnovers = [], validMonths = [];
+
+    filtered.forEach(it => {
+      const amt = getItemAmt(it);
+      const qty = getItemQty(it);
+      const fl = getItemFlow(it);
+
+      totalAmt += amt;
+      totalQty += qty;
+      compTotalAmt += it.endCompAmt;
+      compTotalQty += it.endCompQty;
+      begSum += fl.begAmt;
+      endSum += fl.endAmt;
+
+      if (qty > 0 || amt > 0) {
+        activeSkuCount++;
+        if (it.turnover >= 0) validTurnovers.push(it.turnover);
+        if (!it.isMissingDate && it.months > 0) validMonths.push(it.months);
+      }
+
+      if (it.gradeBJ === '정상') normalAmt += amt;
+      else if (it.gradeBJ === '부진') slowAmt += amt;
+      else if (it.gradeBJ === '악성') deadAmt += amt;
+
+      if (it.gradeAP === '부진' || it.gradeAP === '악성') apRiskAmt += amt;
+      if (it.gradeAP === '정상' && it.gradeBJ === '악성') shiftNormalToDeadAmt += amt;
+    });
+
+    const riskAmt = slowAmt + deadAmt;
+    const riskPct = totalAmt > 0 ? (riskAmt / totalAmt) * 100 : 0;
+    const apRiskPct = totalAmt > 0 ? (apRiskAmt / totalAmt) * 100 : 0;
+    const growthPct = begSum > 0 ? ((endSum - begSum) / begSum) * 100 : 0;
+
+    const avgTurnover = validTurnovers.length > 0 ? validTurnovers.reduce((a, b) => a + b, 0) / validTurnovers.length : 0;
+    validMonths.sort((a, b) => a - b);
+    const medianMonth = validMonths.length > 0 ? validMonths[Math.floor(validMonths.length / 2)] : 0;
+    const avgMonth = validMonths.length > 0 ? validMonths.reduce((a, b) => a + b, 0) / validMonths.length : 0;
+
+    document.getElementById('kpi1Title').textContent = `${scopeLabel} 총재고금액`;
+    document.getElementById('kpi1Val').textContent = `${formatEok(totalAmt, 1)} (${formatMillion(totalAmt, 0)})`;
+    const shareAmtPct = compTotalAmt > 0 ? ((totalAmt / compTotalAmt) * 100).toFixed(1) : '0.0';
+
+    if (state.compData) {
+      const cmpFiltered = getGlobalFilteredItems(state.compData.items);
+      const cmpAmt = cmpFiltered.reduce((s, x) => s + getItemAmt(x), 0);
+      const dPct = cmpAmt > 0 ? (((totalAmt - cmpAmt) / cmpAmt) * 100).toFixed(1) : '0.0';
+      document.getElementById('kpi1Sub1').textContent = `비교기간 대비 ${dPct >= 0 ? '+' : ''}${dPct}%`;
+    } else {
+      document.getElementById('kpi1Sub1').textContent = isSales ? `전사 대비 ${shareAmtPct}%` : `전사 합계 기준`;
+    }
+    document.getElementById('kpi1Sub2').textContent = `총 ${filtered.length.toLocaleString()} SKU`;
+
+    document.getElementById('kpi2Title').textContent = `${scopeLabel} 총재고수량`;
+    document.getElementById('kpi2Val').textContent = formatQty(totalQty);
+    const shareQtyPct = compTotalQty > 0 ? ((totalQty / compTotalQty) * 100).toFixed(1) : '0.0';
+    document.getElementById('kpi2Sub1').textContent = isSales ? `전사 수량 대비 ${shareQtyPct}%` : `전사 총수량`;
+    document.getElementById('kpi2Sub2').textContent = `재고보유 ${activeSkuCount.toLocaleString()} SKU`;
+
+    document.getElementById('kpi3Val').textContent = `${formatMillion(riskAmt, 1)}원`;
+    document.getElementById('kpi3Sub1').textContent = `악성 ${formatMillion(deadAmt, 0)} · 부진 ${formatMillion(slowAmt, 0)}`;
+    document.getElementById('kpi3Sub2').textContent = `정상 ${formatMillion(normalAmt, 0)}`;
+
+    document.getElementById('kpi4Val').textContent = `${riskPct.toFixed(1)}%`;
+    const diffPct = riskPct - apRiskPct;
+    document.getElementById('kpi4Sub1').textContent = `기존(AP) ${apRiskPct.toFixed(1)}% (${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}%p)`;
+    document.getElementById('kpi4Sub2').textContent = `정상→악성 ${formatMillion(shiftNormalToDeadAmt, 0)}`;
+
+    document.getElementById('kpi5Title').textContent = `${scopeLabel} 기간 재고 증감률 (%)`;
+    document.getElementById('kpi5Val').textContent = `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`;
+    document.getElementById('kpi5Val').style.color = growthPct > 0 ? 'var(--color-primary-600)' : 'var(--text-primary)';
+    document.getElementById('kpi5Sub1').textContent = `기초 ${formatMillion(begSum, 0)} → 기말 ${formatMillion(endSum, 0)}`;
+    document.getElementById('kpi5Sub2').textContent = `${scopeLabel} 수불 기준`;
+
+    document.getElementById('kpi6Val').textContent = `${avgTurnover.toFixed(1)}회 / ${medianMonth}개월`;
+    document.getElementById('kpi6Sub1').textContent = `평균 경과 ${avgMonth.toFixed(1)}개월`;
+  }
+
+  /* ==========================================================================
+     8. [차트 2] 재고 등급 교차 비교
+     ========================================================================== */
+  function renderChart2GradeCompare(filtered) {
+    const grades = ['정상', '부진', '악성'];
+    const apSums = { '정상': 0, '부진': 0, '악성': 0 };
+    const bjSums = { '정상': 0, '부진': 0, '악성': 0 };
+
+    const matrix = {
+      '정상': { '정상': 0, '부진': 0, '악성': 0, 'sum': 0 },
+      '부진': { '정상': 0, '부진': 0, '악성': 0, 'sum': 0 },
+      '악성': { '정상': 0, '부진': 0, '악성': 0, 'sum': 0 }
+    };
+
+    let grandTotal = 0;
+
+    filtered.forEach(it => {
+      const amt = getItemAmt(it);
+      if (amt <= 0) return;
+      grandTotal += amt;
+      if (apSums[it.gradeAP] !== undefined) apSums[it.gradeAP] += amt;
+      if (bjSums[it.gradeBJ] !== undefined) bjSums[it.gradeBJ] += amt;
+
+      if (matrix[it.gradeAP] && matrix[it.gradeAP][it.gradeBJ] !== undefined) {
+        matrix[it.gradeAP][it.gradeBJ] += amt;
+        matrix[it.gradeAP].sum += amt;
+      }
+    });
+
+    const pctStr = (val) => grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) + '%' : '0.0%';
+
+    const shiftNormalToRisk = matrix['정상']['부진'] + matrix['정상']['악성'];
+    const shiftNormalToDead = matrix['정상']['악성'];
+    document.getElementById('chart2HighlightAmt').textContent =
+      `${formatMillion(shiftNormalToRisk, 1)}원 (전체의 ${pctStr(shiftNormalToRisk)} | 정상→악성 ${formatMillion(shiftNormalToDead, 1)}원, ${pctStr(shiftNormalToDead)})`;
+    document.getElementById('chart2Badge').textContent =
+      `정상→악성 ${formatMillion(shiftNormalToDead, 0)} (${pctStr(shiftNormalToDead)})`;
+
+    const tbody = document.getElementById('crossMatrixBody');
+    const rowsHtml = grades.map(apG => {
+      const row = matrix[apG];
+      return `
+        <tr>
+          <td>기존 ${apG}</td>
+          <td>
+            ${formatMillion(row['정상'], 1)}
+            <span class="pct-sub">(${pctStr(row['정상'])})</span>
+          </td>
+          <td>
+            ${formatMillion(row['부진'], 1)}
+            <span class="pct-sub">(${pctStr(row['부진'])})</span>
+          </td>
+          <td>
+            ${formatMillion(row['악성'], 1)}
+            <span class="pct-sub">(${pctStr(row['악성'])})</span>
+          </td>
+          <td>
+            ${formatMillion(row.sum, 1)}
+            <span class="pct-sub">(${pctStr(row.sum)})</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const sumRowHtml = `
+      <tr class="bj-sum-row">
+        <td>실질(BJ) 합계</td>
+        <td>${formatMillion(bjSums['정상'], 1)}<span class="pct-sub">(${pctStr(bjSums['정상'])})</span></td>
+        <td>${formatMillion(bjSums['부진'], 1)}<span class="pct-sub">(${pctStr(bjSums['부진'])})</span></td>
+        <td>${formatMillion(bjSums['악성'], 1)}<span class="pct-sub">(${pctStr(bjSums['악성'])})</span></td>
+        <td>${formatMillion(grandTotal, 1)}<span class="pct-sub">(100.0%)</span></td>
+      </tr>
+    `;
+    tbody.innerHTML = rowsHtml + sumRowHtml;
+
+    const directMillionLabelPlugin = {
+      id: 'directMillionLabel',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        ctx.save();
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+
+        chart.data.datasets.forEach((dataset, i) => {
+          const meta = chart.getDatasetMeta(i);
+          meta.data.forEach((bar, index) => {
+            const val = dataset.data[index];
+            if (val !== null && val !== undefined) {
+              ctx.fillStyle = i === 0 ? '#0958D9' : '#262626';
+              const labelText = Math.round(val).toLocaleString('ko-KR') + '백만';
+              ctx.fillText(labelText, bar.x, bar.y - 4);
+            }
+          });
+        });
+        ctx.restore();
+      }
+    };
+
+    const ctx = document.getElementById('chartGradeCompare').getContext('2d');
+    if (charts.gradeCompare) charts.gradeCompare.destroy();
+
+    const maxValM = Math.max(
+      ...grades.map(g => apSums[g] / 1e6),
+      ...grades.map(g => bjSums[g] / 1e6),
+      100
+    );
+
+    charts.gradeCompare = new Chart(ctx, {
+      type: 'bar',
+      plugins: [directMillionLabelPlugin],
+      data: {
+        labels: ['정상 재고', '부진 재고 (주의)', '악성 재고 (처분대상)'],
+        datasets: [
+          {
+            label: '기존 등급 (AP열 구분1)',
+            data: grades.map(g => +(apSums[g] / 1e6).toFixed(1)),
+            backgroundColor: 'rgba(22, 119, 255, 0.28)',
+            borderColor: '#1677FF',
+            borderWidth: 1.5,
+            borderRadius: 6
+          },
+          {
+            label: '실질 등급 (BJ열 회전율·입고일 반영)',
+            data: grades.map(g => +(bjSums[g] / 1e6).toFixed(1)),
+            backgroundColor: ['#52C41A', '#FAAD14', '#FF4D4F'],
+            borderColor: ['#389E0D', '#D48806', '#CF1322'],
+            borderWidth: 1,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 22 } },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 } } },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const mVal = context.parsed.y;
+                const ratio = grandTotal > 0 ? ((mVal * 1e6 / grandTotal) * 100).toFixed(1) : '0.0';
+                return `${context.dataset.label}: ${mVal.toLocaleString('ko-KR')}백만원 (전체의 ${ratio}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: maxValM * 1.18,
+            title: { display: true, text: '재고금액 (단위: 백만원)', font: { size: 11 } },
+            ticks: { callback: (v) => v.toLocaleString('ko-KR') + '백만' },
+            grid: { color: '#F0F0F0' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  /* ==========================================================================
+     9. [차트 3] 기간 수불 흐름 브릿지 (기초 → 입고 → 출고 → 기말)
+     ========================================================================== */
+  function renderChart3FlowTable(filtered) {
+    const isSales = state.scope === 'sales';
+    const scopeLabel = isSales ? '영업본부' : '전사 합계';
+
+    document.getElementById('chart3Title').textContent =
+      `[차트 3] 기간 수불 흐름 브릿지 — [${scopeLabel}] 기준`;
+
+    const f = {
+      begQty: 0, begAmt: 0,
+      inPurchaseQty: 0, inPurchaseAmt: 0,
+      inOutsourceQty: 0, inOutsourceAmt: 0,
+      inTransferQty: 0, inTransferAmt: 0,
+      inTotalQty: 0, inTotalAmt: 0,
+      outSalesQty: 0, outSalesAmt: 0,
+      outOutsourceQty: 0, outOutsourceAmt: 0,
+      outTransferQty: 0, outTransferAmt: 0,
+      outTotalQty: 0, outTotalAmt: 0,
+      endQty: 0, endAmt: 0
+    };
+
+    filtered.forEach(it => {
+      const fl = getItemFlow(it);
+      f.begQty += fl.begQty;
+      f.begAmt += fl.begAmt;
+      f.inPurchaseQty += fl.inPurchaseQty;
+      f.inPurchaseAmt += fl.inPurchaseAmt;
+      f.inOutsourceQty += fl.inOutsourceQty;
+      f.inOutsourceAmt += fl.inOutsourceAmt;
+      f.inTransferQty += fl.inTransferQty;
+      f.inTransferAmt += fl.inTransferAmt;
+      f.inTotalQty += fl.inTotalQty;
+      f.inTotalAmt += fl.inTotalAmt;
+      f.outSalesQty += fl.outSalesQty;
+      f.outSalesAmt += fl.outSalesAmt;
+      f.outOutsourceQty += fl.outOutsourceQty;
+      f.outOutsourceAmt += fl.outOutsourceAmt;
+      f.outTransferQty += fl.outTransferQty;
+      f.outTransferAmt += fl.outTransferAmt;
+      f.outTotalQty += fl.outTotalQty;
+      f.outTotalAmt += fl.outTotalAmt;
+      f.endQty += fl.endQty;
+      f.endAmt += fl.endAmt;
+    });
+
+    const pctIn = (v) => f.inTotalAmt > 0 ? ((v / f.inTotalAmt) * 100).toFixed(1) + '%' : '0.0%';
+    const pctOut = (v) => f.outTotalAmt > 0 ? ((v / f.outTotalAmt) * 100).toFixed(1) + '%' : '0.0%';
+
+    const diffAmt = f.endAmt - f.begAmt;
+    const diffAmtPct = f.begAmt > 0 ? ((diffAmt / f.begAmt) * 100).toFixed(1) : '0.0';
+
+    const diffQty = f.endQty - f.begQty;
+    const diffQtyPct = f.begQty > 0 ? ((diffQty / f.begQty) * 100).toFixed(1) : '0.0';
+
+    document.getElementById('chart3Badge').textContent =
+      `[${scopeLabel}] 기초 대비 금액 ${diffAmt >= 0 ? '+' : ''}${diffAmtPct}% / 수량 ${diffQty >= 0 ? '+' : ''}${diffQtyPct}%`;
+
+    const fmtQtyOnly = (q) => `${Math.round(q).toLocaleString('ko-KR')}개`;
+
+    const endColLabel = isSales ? '영업본부 기말재고 (BB·AV열)' : '전사 기말재고 (AK·AM열)';
+
+    const tbody = document.getElementById('flowBridgeTableBody');
+    tbody.innerHTML = `
+      <tr class="flow-total-row">
+        <td class="flow-cat">1. 기초재고</td>
+        <td class="flow-step">기초재고 (D·F열)</td>
+        <td>${fmtQtyOnly(f.begQty)}</td>
+        <td>${formatMillion(f.begAmt, 1)}원</td>
+        <td style="text-align:center;color:var(--text-tertiary);">기준 (100%)</td>
+      </tr>
+      <tr>
+        <td class="flow-cat" rowspan="4" style="color:var(--color-primary-600);">2. 기간 입고 (+)</td>
+        <td class="flow-step">+ 구매입고 (G·I열)</td>
+        <td>${fmtQtyOnly(f.inPurchaseQty)}</td>
+        <td style="color:var(--color-primary-600);">+${formatMillion(f.inPurchaseAmt, 1)}원</td>
+        <td style="text-align:center;">입고의 ${pctIn(f.inPurchaseAmt)}</td>
+      </tr>
+      <tr>
+        <td class="flow-step">+ 외주입고 (J·L열)</td>
+        <td>${fmtQtyOnly(f.inOutsourceQty)}</td>
+        <td style="color:var(--color-primary-600);">+${formatMillion(f.inOutsourceAmt, 1)}원</td>
+        <td style="text-align:center;">입고의 ${pctIn(f.inOutsourceAmt)}</td>
+      </tr>
+      <tr>
+        <td class="flow-step">+ 대체입고 (M·O열)</td>
+        <td>${fmtQtyOnly(f.inTransferQty)}</td>
+        <td style="color:var(--color-primary-600);">+${formatMillion(f.inTransferAmt, 1)}원</td>
+        <td style="text-align:center;">입고의 ${pctIn(f.inTransferAmt)}</td>
+      </tr>
+      <tr class="flow-total-row">
+        <td class="flow-step">입고 합계 (S·U열)</td>
+        <td>${fmtQtyOnly(f.inTotalQty)}</td>
+        <td style="color:var(--color-primary-700);">+${formatMillion(f.inTotalAmt, 1)}원</td>
+        <td style="text-align:center;">입고 100.0%</td>
+      </tr>
+      <tr>
+        <td class="flow-cat" rowspan="3" style="color:var(--color-secondary-500);">3. 기간 출고 (-)</td>
+        <td class="flow-step">- 매출출고 (V·X열)</td>
+        <td>${fmtQtyOnly(f.outSalesQty)}</td>
+        <td style="color:var(--color-secondary-500);">-${formatMillion(f.outSalesAmt, 1)}원</td>
+        <td style="text-align:center;">출고의 ${pctOut(f.outSalesAmt)}</td>
+      </tr>
+      <tr>
+        <td class="flow-step">- 대체·외주출고 (Y~AD열)</td>
+        <td>${fmtQtyOnly(f.outTransferQty + f.outOutsourceQty)}</td>
+        <td style="color:var(--color-secondary-500);">-${formatMillion(f.outTransferAmt + f.outOutsourceAmt, 1)}원</td>
+        <td style="text-align:center;">출고의 ${pctOut(f.outTransferAmt + f.outOutsourceAmt)}</td>
+      </tr>
+      <tr class="flow-total-row">
+        <td class="flow-step">출고 합계 (AH·AJ열)</td>
+        <td>${fmtQtyOnly(f.outTotalQty)}</td>
+        <td style="color:var(--color-secondary-500);">-${formatMillion(f.outTotalAmt, 1)}원</td>
+        <td style="text-align:center;">출고 100.0%</td>
+      </tr>
+      <tr class="flow-ending-row">
+        <td class="flow-cat" style="background:var(--color-primary-100);color:var(--color-primary-800);">4. 기말재고</td>
+        <td class="flow-step">${endColLabel}</td>
+        <td>${fmtQtyOnly(f.endQty)}</td>
+        <td>${formatMillion(f.endAmt, 1)}원</td>
+        <td style="text-align:center;">기초 대비 ${diffAmt >= 0 ? '+' : ''}${diffAmtPct}%</td>
+      </tr>
+    `;
+
+    document.getElementById('chart3DiffGrid').innerHTML = `
+      <div class="flow-diff-box">
+        <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;justify-content:space-between;">
+          <span>💰 [${scopeLabel} · 금액 기준] 기간 증감</span>
+          <span style="color:var(--color-primary-600);">${diffAmt >= 0 ? '+' : ''}${formatMillion(diffAmt, 1)}원 (${diffAmt >= 0 ? '+' : ''}${diffAmtPct}%)</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-secondary);">
+          기초 <b>${formatMillion(f.begAmt, 1)}원</b> → 기말 <b>${formatMillion(f.endAmt, 1)}원</b><br/>
+          <span style="color:var(--text-tertiary);">(기간 총입고 +${formatMillion(f.inTotalAmt, 1)}원 / 기간 총출고 -${formatMillion(f.outTotalAmt, 1)}원)</span>
+        </div>
+      </div>
+      <div class="flow-diff-box qty-box">
+        <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;justify-content:space-between;">
+          <span>📦 [${scopeLabel} · 수량 기준] 기간 증감</span>
+          <span style="color:#389E0D;">${diffQty >= 0 ? '+' : ''}${Math.round(diffQty).toLocaleString('ko-KR')}개 (${diffQty >= 0 ? '+' : ''}${diffQtyPct}%)</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-secondary);">
+          기초 <b>${Math.round(f.begQty).toLocaleString('ko-KR')}개</b> → 기말 <b>${Math.round(f.endQty).toLocaleString('ko-KR')}개</b><br/>
+          <span style="color:var(--text-tertiary);">(기간 총입고 +${Math.round(f.inTotalQty).toLocaleString('ko-KR')}개 / 기간 총출고 -${Math.round(f.outTotalQty).toLocaleString('ko-KR')}개)</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ==========================================================================
+     10. [차트 5] 품목군(코드 앞 3자리)별 재고 금액 및 등급 비중 Top 10
+     ========================================================================== */
+  function renderChart5TopPrefix(globalFiltered) {
+    let grandTotalAmt = 0, grandTotalQty = 0;
+    globalFiltered.forEach(it => {
+      grandTotalAmt += getItemAmt(it);
+      grandTotalQty += getItemQty(it);
+    });
+
+    const c5Filtered = globalFiltered.filter(it => {
+      if (state.c5Mids.size > 0 && !state.c5Mids.has(it.codeMid)) return false;
+      if (state.c5Ips.size > 0 && !state.c5Ips.has(it.ip)) return false;
+      return true;
+    });
+
+    let selTotalAmt = 0, selTotalQty = 0;
+    let selNormalAmt = 0, selSlowAmt = 0, selDeadAmt = 0;
+    let selNormalQty = 0, selSlowQty = 0, selDeadQty = 0;
+
+    const map = new Map();
+
+    c5Filtered.forEach(it => {
+      const amt = getItemAmt(it);
+      const qty = getItemQty(it);
+      if (amt <= 0 && qty <= 0) return;
+
+      selTotalAmt += amt;
+      selTotalQty += qty;
+
+      if (it.gradeBJ === '정상') { selNormalAmt += amt; selNormalQty += qty; }
+      else if (it.gradeBJ === '부진') { selSlowAmt += amt; selSlowQty += qty; }
+      else if (it.gradeBJ === '악성') { selDeadAmt += amt; selDeadQty += qty; }
+
+      const groupKey = it.prefix;
+      if (!map.has(groupKey)) {
+        map.set(groupKey, { prefix: groupKey, codeMidSet: new Set(), normal: 0, slow: 0, dead: 0, total: 0, qty: 0, skuCount: 0 });
+      }
+      const entry = map.get(groupKey);
+      entry.codeMidSet.add(it.codeMid);
+      if (it.gradeBJ === '정상') entry.normal += amt;
+      else if (it.gradeBJ === '부진') entry.slow += amt;
+      else if (it.gradeBJ === '악성') entry.dead += amt;
+      entry.total += amt;
+      entry.qty += qty;
+      entry.skuCount += 1;
+    });
+
+    const top10 = Array.from(map.values())
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    const midNameDict = { 'T1': 'T1-완구', 'P1': 'P1-출판', 'T2': 'T2-수입완구', 'L1': 'L1-굿즈' };
+    const midLabel = state.c5Mids.size === 0
+      ? '전체(T1·P1·T2·L1 등)'
+      : Array.from(state.c5Mids).map(m => midNameDict[m] || m).join(', ');
+    const ipLabel = state.c5Ips.size === 0 ? '전체' : Array.from(state.c5Ips).join(', ');
+
+    if (state.leftTab === 'chart5') {
+      document.getElementById('leftTabTitle').textContent =
+        `[차트 5] 품목군 Top 10 — 코드분류: [${midLabel}]`;
+    }
+
+    const labels = top10.map(d => PREFIX_NAME_MAP[d.prefix] || `${d.prefix} 품목군`);
+
+    const shareOfTotalAmt = grandTotalAmt > 0 ? ((selTotalAmt / grandTotalAmt) * 100).toFixed(1) : '0.0';
+    const shareOfTotalQty = grandTotalQty > 0 ? ((selTotalQty / grandTotalQty) * 100).toFixed(1) : '0.0';
+    const deadRatio = selTotalAmt > 0 ? ((selDeadAmt / selTotalAmt) * 100).toFixed(1) : '0.0';
+    const slowRatio = selTotalAmt > 0 ? ((selSlowAmt / selTotalAmt) * 100).toFixed(1) : '0.0';
+    const normRatio = selTotalAmt > 0 ? ((selNormalAmt / selTotalAmt) * 100).toFixed(1) : '0.0';
+
+    document.getElementById('chart5AnalysisBox').innerHTML = `
+      <div class="analysis-metrics-row">
+        <span>📊 <strong>선택영역 합계 분석</strong> <small style="color:var(--text-tertiary);">[1) 코드(3·4번째): <b>${midLabel}</b> | 2) IP: <b>${ipLabel}</b>]</small></span>
+        <span>전체 대비 금액 비중: <strong style="color:var(--color-primary-600);">${shareOfTotalAmt}%</strong> (수량 비중 ${shareOfTotalQty}%)</span>
+      </div>
+      <div class="analysis-metrics-row" style="margin-top:2px;">
+        <span class="metric-pill">총 재고금액: <b>${formatMillion(selTotalAmt, 1)}원</b></span>
+        <span class="metric-pill">총 재고수량: <b>${Math.round(selTotalQty).toLocaleString('ko-KR')}개</b></span>
+        <span class="metric-pill" style="color:#389E0D;">정상: <b>${formatMillion(selNormalAmt, 1)}</b> (${normRatio}% · ${Math.round(selNormalQty).toLocaleString()}개)</span>
+        <span class="metric-pill" style="color:#D48806;">부진: <b>${formatMillion(selSlowAmt, 1)}</b> (${slowRatio}% · ${Math.round(selSlowQty).toLocaleString()}개)</span>
+        <span class="metric-pill" style="color:#CF1322;">악성: <b>${formatMillion(selDeadAmt, 1)}</b> (${deadRatio}% · ${Math.round(selDeadQty).toLocaleString()}개)</span>
+      </div>
+    `;
+
+    const stackedTotalLabelPlugin = {
+      id: 'stackedTotalLabel',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        ctx.save();
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = '#262626';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+
+        const lastDatasetIdx = chart.data.datasets.length - 1;
+        const meta = chart.getDatasetMeta(lastDatasetIdx);
+        meta.data.forEach((bar, index) => {
+          const item = top10[index];
+          if (!item) return;
+          const totalM = Math.round(item.total / 1e6).toLocaleString('ko-KR') + '백만';
+          ctx.fillText(totalM, bar.x + 6, bar.y);
+        });
+        ctx.restore();
+      }
+    };
+
+    const ctx = document.getElementById('chartTopPrefix').getContext('2d');
+    if (charts.topPrefix) charts.topPrefix.destroy();
+
+    const maxRowM = top10.length > 0 ? Math.max(...top10.map(d => d.total / 1e6)) : 100;
+
+    charts.topPrefix = new Chart(ctx, {
+      type: 'bar',
+      plugins: [stackedTotalLabelPlugin],
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '악성 재고 (백만원)',
+            data: top10.map(d => +(d.dead / 1e6).toFixed(1)),
+            backgroundColor: '#FF4D4F',
+            borderRadius: 4
+          },
+          {
+            label: '부진 재고 (백만원)',
+            data: top10.map(d => +(d.slow / 1e6).toFixed(1)),
+            backgroundColor: '#FAAD14',
+            borderRadius: 4
+          },
+          {
+            label: '정상 재고 (백만원)',
+            data: top10.map(d => +(d.normal / 1e6).toFixed(1)),
+            backgroundColor: '#1677FF',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 58 } },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${context.parsed.x.toLocaleString('ko-KR')}백만원`,
+              afterBody: (items) => {
+                const idx = items[0].dataIndex;
+                const d = top10[idx];
+                const riskRatio = d.total > 0 ? (((d.dead + d.slow) / d.total) * 100).toFixed(1) : '0.0';
+                return `합계: ${formatMillion(d.total, 1)}원 / 수량: ${Math.round(d.qty).toLocaleString('ko-KR')}개 (${d.skuCount} SKU)\n포함 코드분류(3·4번째): ${Array.from(d.codeMidSet).join(', ')}\n위험재고(악성+부진) 비중: ${riskRatio}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            suggestedMax: maxRowM * 1.15,
+            title: { display: true, text: '재고금액 (단위: 백만원)', font: { size: 11 } },
+            ticks: { callback: (v) => v.toLocaleString('ko-KR') + '백만' },
+            grid: { color: '#F0F0F0' }
+          },
+          y: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { font: { size: 11 } }
+          }
+        }
+      }
+    });
+  }
+
+  /* ==========================================================================
+     11. [차트 1] IP별 재고 구성
+     ========================================================================== */
+  function renderChart1IpComposition() {
+    const ipStats = {};
+    IP_PRIORITY_LIST.forEach(ip => {
+      ipStats[ip] = { ip, amt: 0, qty: 0, skuCount: 0, deadAmt: 0, slowAmt: 0 };
+    });
+
+    let totalAmt = 0, totalQty = 0;
+
+    state.rawItems.forEach(it => {
+      const amt = getItemAmt(it);
+      const qty = getItemQty(it);
+      totalAmt += amt;
+      totalQty += qty;
+
+      const st = ipStats[it.ip] || ipStats['기타(나머지)'];
+      st.amt += amt;
+      st.qty += qty;
+      st.skuCount += 1;
+      if (it.gradeBJ === '악성') st.deadAmt += amt;
+      if (it.gradeBJ === '부진') st.slowAmt += amt;
+    });
+
+    const orderedList = IP_PRIORITY_LIST.map(ip => ipStats[ip]);
+
+    const gridEl = document.getElementById('ipSummaryGrid');
+    gridEl.innerHTML = orderedList.map(d => {
+      const sharePct = totalAmt > 0 ? ((d.amt / totalAmt) * 100).toFixed(1) : '0.0';
+      const riskPct = d.amt > 0 ? (((d.deadAmt + d.slowAmt) / d.amt) * 100).toFixed(1) : '0.0';
+      return `
+        <div class="ip-info-card">
+          <div class="ip-info-head">
+            <span>${d.ip} <small style="color:var(--text-tertiary);font-weight:400;">(${d.skuCount}종)</small></span>
+            <span class="tag tag-info" style="height:18px;line-height:16px;padding:0 5px;">비중 ${sharePct}%</span>
+          </div>
+          <div class="ip-info-amt">${formatMillion(d.amt, 1)}원</div>
+          <div style="color:var(--text-secondary);margin-top:2px;display:flex;justify-content:space-between;">
+            <span>수량: <b>${formatManQty(d.qty, 1)}</b></span>
+            <span style="color:var(--color-error-fg);">위험 ${riskPct}%</span>
+          </div>
+          <div style="color:var(--text-tertiary);font-size:10.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${IP_META_DESC[d.ip]}">
+            ${IP_META_DESC[d.ip]}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const ctx = document.getElementById('chartIpComposition').getContext('2d');
+    if (charts.ipComp) charts.ipComp.destroy();
+
+    charts.ipComp = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: orderedList.map(d => d.ip),
+        datasets: [
+          {
+            label: '재고금액 (백만원)',
+            data: orderedList.map(d => +(d.amt / 1e6).toFixed(1)),
+            backgroundColor: '#1677FF',
+            borderRadius: 5,
+            yAxisID: 'yAmt'
+          },
+          {
+            label: '재고수량 (만개)',
+            data: orderedList.map(d => +(d.qty / 1e4).toFixed(1)),
+            backgroundColor: '#69B1FF',
+            borderRadius: 5,
+            yAxisID: 'yQty'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0].dataIndex;
+                const d = orderedList[idx];
+                const share = totalAmt > 0 ? ((d.amt / totalAmt) * 100).toFixed(1) : '0.0';
+                return `금액 비중: 전체의 ${share}%\n정확한 수량: ${Math.round(d.qty).toLocaleString('ko-KR')}개 (${d.skuCount.toLocaleString('ko-KR')} SKU)\n특징: ${IP_META_DESC[d.ip]}`;
+              }
+            }
+          }
+        },
+        scales: {
+          yAmt: {
+            type: 'linear',
+            position: 'left',
+            beginAtZero: true,
+            title: { display: true, text: '재고금액 (백만원)', font: { size: 11 } },
+            ticks: { callback: (v) => v.toLocaleString('ko-KR') + '백만' },
+            grid: { color: '#F0F0F0' }
+          },
+          yQty: {
+            type: 'linear',
+            position: 'right',
+            beginAtZero: true,
+            title: { display: true, text: '재고수량 (만개)', font: { size: 11 } },
+            ticks: { callback: (v) => v + '만개' },
+            grid: { drawOnChartArea: false }
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  /* ==========================================================================
+     12. [차트 4] 입고 경과기간(BL) vs 재고회전율(BI) 리스크 매트릭스
+     ========================================================================== */
+  function renderChart4RiskScatter(globalFiltered) {
+    const validWithStock = globalFiltered.filter(it => getItemAmt(it) > 0 && !it.isMissingDate);
+
+    let totalValidAmt = 0;
+    validWithStock.forEach(it => { totalValidAmt += getItemAmt(it); });
+
+    const activeGrades = state.c4Grades.size > 0 ? state.c4Grades : new Set(['악성', '부진', '정상']);
+    const selectedItems = validWithStock.filter(it => activeGrades.has(it.gradeBJ));
+
+    let selAmt = 0, selQty = 0, selSkuCount = selectedItems.length;
+    let dangerZoneAmt = 0, dangerZoneCount = 0;
+    let sumMonths = 0, sumTurnover = 0;
+
+    selectedItems.forEach(it => {
+      const amt = getItemAmt(it);
+      const qty = getItemQty(it);
+      selAmt += amt;
+      selQty += qty;
+      sumMonths += it.months;
+      sumTurnover += it.turnover;
+      if (it.months >= 18 && it.turnover < 0.5) {
+        dangerZoneAmt += amt;
+        dangerZoneCount++;
+      }
+    });
+
+    const avgMonths = selSkuCount > 0 ? (sumMonths / selSkuCount).toFixed(1) : '0.0';
+    const avgTurn = selSkuCount > 0 ? (sumTurnover / selSkuCount).toFixed(2) : '0.00';
+    const selSharePct = totalValidAmt > 0 ? ((selAmt / totalValidAmt) * 100).toFixed(1) : '0.0';
+    const selectedGradesLabel = Array.from(activeGrades).join(' · ');
+
+    const boxEl = document.getElementById('chart4DynamicBox');
+    boxEl.className = activeGrades.has('악성') ? 'analysis-summary-box danger' : 'analysis-summary-box';
+    boxEl.innerHTML = `
+      <div class="analysis-metrics-row">
+        <span>🔍 <strong>선택 등급 [${selectedGradesLabel}] 리스크 분석</strong> (${selSkuCount.toLocaleString()}개 SKU)</span>
+        <span>선택 비중: <strong style="color:var(--color-primary-600);">${selSharePct}%</strong> (총 ${formatMillion(selAmt, 1)}원 / ${Math.round(selQty).toLocaleString('ko-KR')}개)</span>
+      </div>
+      <div class="analysis-metrics-row" style="margin-top:2px;">
+        <span class="metric-pill">평균 입고경과: <b>${avgMonths}개월</b></span>
+        <span class="metric-pill">평균 회전율: <b>${avgTurn}회</b></span>
+        <span class="metric-pill" style="color:#CF1322;">⚠ 우하단 고위험군(18개월↑·회전율 0.5↓): <b>${dangerZoneCount}개 SKU · ${formatMillion(dangerZoneAmt, 1)}원</b></span>
+      </div>
+    `;
+
+    const topBubbles = selectedItems
+      .slice()
+      .sort((a, b) => getItemAmt(b) - getItemAmt(a))
+      .slice(0, 250);
+
+    document.getElementById('scatterNoteBadge').textContent =
+      `선택등급 고액 상위 ${topBubbles.length}개 SKU 표시`;
+
+    const buckets = { '악성': [], '부진': [], '정상': [] };
+    topBubbles.forEach(it => {
+      const g = it.gradeBJ;
+      if (!buckets[g]) return;
+      const amt = getItemAmt(it);
+      const r = Math.max(4, Math.min(22, Math.sqrt(amt / 1e6) * 1.15));
+      buckets[g].push({
+        x: it.months,
+        y: Math.min(12, it.turnover),
+        r,
+        raw: it,
+        amt
+      });
+    });
+
+    const dangerZonePlugin = {
+      id: 'dangerZoneBox',
+      beforeDraw(chart) {
+        const { ctx, chartArea, scales: { x, y } } = chart;
+        if (!chartArea) return;
+        const xStart = Math.max(chartArea.left, x.getPixelForValue(18));
+        const xEnd = chartArea.right;
+        const yStart = Math.max(chartArea.top, y.getPixelForValue(0.5));
+        const yEnd = chartArea.bottom;
+
+        if (xEnd > xStart && yEnd > yStart) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(255, 77, 79, 0.08)';
+          ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+          ctx.strokeStyle = 'rgba(255, 77, 79, 0.45)';
+          ctx.setLineDash([4, 4]);
+          ctx.strokeRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+
+          ctx.fillStyle = '#CF1322';
+          ctx.font = '600 11px sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('⚠ 고령·저회전 위험영역 (18개월↑ & 회전율 0.5↓)', xEnd - 8, yEnd - 8);
+          ctx.restore();
+        }
+      }
+    };
+
+    const datasets = [];
+    if (activeGrades.has('악성')) {
+      datasets.push({
+        label: '악성 재고',
+        data: buckets['악성'],
+        backgroundColor: 'rgba(255, 77, 79, 0.65)',
+        borderColor: '#CF1322',
+        borderWidth: 1
+      });
+    }
+    if (activeGrades.has('부진')) {
+      datasets.push({
+        label: '부진 재고',
+        data: buckets['부진'],
+        backgroundColor: 'rgba(250, 173, 20, 0.65)',
+        borderColor: '#D48806',
+        borderWidth: 1
+      });
+    }
+    if (activeGrades.has('정상')) {
+      datasets.push({
+        label: '정상 재고',
+        data: buckets['정상'],
+        backgroundColor: 'rgba(22, 119, 255, 0.55)',
+        borderColor: '#0958D9',
+        borderWidth: 1
+      });
+    }
+
+    const ctx = document.getElementById('chartRiskScatter').getContext('2d');
+    if (charts.riskScatter) charts.riskScatter.destroy();
+
+    charts.riskScatter = new Chart(ctx, {
+      type: 'bubble',
+      plugins: [dangerZonePlugin],
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const d = context.raw.raw;
+                const amt = context.raw.amt;
+                return [
+                  `[${d.code}] ${d.name} (${d.ip})`,
+                  `재고금액: ${formatMillion(amt, 2)}원 (수량: ${Math.round(getItemQty(d)).toLocaleString('ko-KR')}개)`,
+                  `경과개월: ${d.months}개월 (최종입고: ${d.lastInDate || '-'})`,
+                  `재고회전율: ${d.turnover}회 | 실질등급: ${d.gradeBJ}`
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: '최종입고 경과개월수 (BL열, 개월)', font: { size: 11 } },
+            min: 0,
+            grid: { color: '#F0F0F0' }
+          },
+          y: {
+            title: { display: true, text: '재고회전율 (BI열, 회 - 상단 12회 캡)', font: { size: 11 } },
+            min: 0,
+            max: 12,
+            grid: { color: '#F0F0F0' }
+          }
+        }
+      }
+    });
+  }
+
+  /* ==========================================================================
+     13. [차트 6] 영업본부 중점 관리 SKU 상세 명세표
+     ========================================================================== */
+  function renderDataTable(globalFiltered) {
+    const isSales = state.scope === 'sales';
+    document.getElementById('thQtyLabel').textContent = isSales ? '영업본부수량(BB)' : '전사기말수량(AK)';
+    document.getElementById('thAmtLabel').textContent = isSales ? '영업본부금액(AV)' : '전사기말금액(AM)';
+
+    const tq = state.tableSearch.trim().toLowerCase();
+    const baseTableItems = globalFiltered.filter(it => {
+      if (state.tableCodeMid !== 'ALL' && it.codeMid !== state.tableCodeMid) return false;
+      if (state.tableIps.size < IP_PRIORITY_LIST.length && !state.tableIps.has(it.ip)) return false;
+      if (state.tableGrades.size > 0 && !state.tableGrades.has(it.gradeBJ)) return false;
+      if (tq) {
+        if (!it.code.toLowerCase().includes(tq) && !it.name.toLowerCase().includes(tq)) return false;
+      }
+      return true;
+    });
+
+    const shiftItems = baseTableItems.filter(it => it.gradeAP === '정상' && it.gradeBJ === '악성' && getItemAmt(it) > 0);
+    const deadItemsSorted = baseTableItems
+      .filter(it => it.gradeBJ === '악성' && getItemAmt(it) > 0)
+      .sort((a, b) => getItemAmt(b) - getItemAmt(a))
+      .slice(0, 50);
+
+    document.getElementById('qCountAll').textContent = baseTableItems.length.toLocaleString('ko-KR');
+    document.getElementById('qCountDead50').textContent = deadItemsSorted.length.toLocaleString('ko-KR');
+    document.getElementById('qCountShift').textContent = shiftItems.length.toLocaleString('ko-KR');
+
+    let tableItems = baseTableItems;
+    if (state.quickTab === 'DEAD_TOP50') {
+      tableItems = deadItemsSorted;
+    } else if (state.quickTab === 'SHIFT_NORMAL_TO_DEAD') {
+      tableItems = shiftItems;
+    }
+
+    const dir = state.sortDir === 'asc' ? 1 : -1;
+    tableItems = tableItems.slice().sort((a, b) => {
+      switch (state.sortKey) {
+        case 'code': return a.code.localeCompare(b.code, 'en') * dir;
+        case 'ip': return a.ip.localeCompare(b.ip, 'ko') * dir;
+        case 'name': return a.name.localeCompare(b.name, 'ko') * dir;
+        case 'qty': return (getItemQty(a) - getItemQty(b)) * dir;
+        case 'unitPrice': return (a.unitPrice - b.unitPrice) * dir;
+        case 'amt': return (getItemAmt(a) - getItemAmt(b)) * dir;
+        case 'incRate': return (a.incRate - b.incRate) * dir;
+        case 'turnover': return (a.turnover - b.turnover) * dir;
+        case 'gradeBJ': return a.gradeBJ.localeCompare(b.gradeBJ, 'ko') * dir;
+        case 'months': return (a.months - b.months) * dir;
+        default: return 0;
+      }
+    });
+
+    const totalCount = tableItems.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / state.pageSize));
+    if (state.page > totalPages) state.page = totalPages;
+
+    const startIdx = (state.page - 1) * state.pageSize;
+    const pageSlice = tableItems.slice(startIdx, startIdx + state.pageSize);
+
+    document.getElementById('tableSummaryInfo').textContent =
+      `총 ${totalCount.toLocaleString('ko-KR')}개 SKU 중 ${totalCount > 0 ? startIdx + 1 : 0} - ${Math.min(startIdx + state.pageSize, totalCount)} 표시`;
+    document.getElementById('pageIndicator').textContent = `${state.page} / ${totalPages}`;
+    document.getElementById('btnPrevPage').disabled = state.page <= 1;
+    document.getElementById('btnNextPage').disabled = state.page >= totalPages;
+
+    const tbody = document.getElementById('skuTableBody');
+    if (pageSlice.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-tertiary);">조건에 해당하는 품목이 없습니다.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = pageSlice.map(it => {
+      const qty = getItemQty(it);
+      const amt = getItemAmt(it);
+      const isShiftRisk = it.gradeAP === '정상' && it.gradeBJ === '악성';
+
+      let incHtml = '';
+      if (it.isNewStock) {
+        incHtml = `<span class="tag tag-info" title="기초재고 0원 → 기말 ${formatMillion(it.endCompAmt, 1)}원">신규 순증</span>`;
+      } else if (it.begAmt === 0 && it.endCompAmt === 0) {
+        incHtml = `<span style="color:var(--text-tertiary);">0.0%</span>`;
+      } else {
+        const sign = it.incRate > 0 ? '+' : '';
+        const color = it.incRate > 50 ? 'var(--color-error-fg)' : (it.incRate < 0 ? 'var(--color-success-fg)' : 'var(--text-primary)');
+        incHtml = `<span style="font-weight:600;color:${color};" title="기초 ₩${Math.round(it.begAmt).toLocaleString()} → 기말 ₩${Math.round(it.endCompAmt).toLocaleString()}">${sign}${it.incRate.toFixed(1)}%</span>`;
+      }
+
+      const dateCell = it.isMissingDate
+        ? `<span class="tag tag-warning" title="BK열 최종입고일 누락으로 경과월 1520개월 계산됨">입고일 미상 (${it.months}개월)</span>`
+        : `<span>${it.lastInDate} <small style="color:var(--text-tertiary);">(${it.months}개월)</small></span>`;
+
+      return `
+        <tr class="${isShiftRisk ? 'row-warning' : ''}">
+          <td><span class="code-badge">${it.code}</span> <small style="color:var(--text-tertiary);">(${it.codeMid})</small></td>
+          <td><span class="tag tag-neutral">${it.ip}</span></td>
+          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(it.name)}">
+            ${escapeHtml(it.name)}
+          </td>
+          <td class="num-col">${Math.round(qty).toLocaleString('ko-KR')}개</td>
+          <td class="num-col">₩${Math.round(it.unitPrice).toLocaleString('ko-KR')}</td>
+          <td class="num-col" style="font-weight:600;">
+            ₩${Math.round(amt).toLocaleString('ko-KR')}
+            <small style="display:block;color:var(--text-tertiary);font-weight:400;">(${formatMillion(amt, 2)})</small>
+          </td>
+          <td class="num-col">${incHtml}</td>
+          <td class="num-col" style="font-weight:${it.turnover < 0.5 ? '700' : '400'};color:${it.turnover < 0.5 ? 'var(--color-error-fg)' : 'inherit'};">
+            ${it.turnover.toFixed(1)}회
+          </td>
+          <td>
+            ${renderGradeTag(it.gradeAP)}
+            <span style="color:var(--text-tertiary);margin:0 2px;">→</span>
+            ${renderGradeTag(it.gradeBJ)}
+            ${isShiftRisk ? '<span class="tag tag-error" style="margin-left:4px;">전환주의</span>' : ''}
+          </td>
+          <td>${dateCell}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderGradeTag(g) {
+    if (g === '정상') return `<span class="tag tag-success">정상</span>`;
+    if (g === '부진') return `<span class="tag tag-warning">부진</span>`;
+    if (g === '악성') return `<span class="tag tag-error">악성</span>`;
+    return `<span class="tag tag-neutral">재고없음</span>`;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ==========================================================================
+     14. 테이블 검색창 유사 키워드 안내 기능
+     ========================================================================== */
+  function updateSearchSuggestions(query) {
+    const box = document.getElementById('tableSuggestBox');
+    const q = query.trim().toLowerCase();
+
+    if (!q) {
+      const popularKeywords = ['뽀로로', '타요', '잔망루피', '잔망', '데코데코', '해치멀', '해치', '퍼글러', '스퀴시', '키링', '봉제', '사운드북', 'TYT', 'PRT', 'EET'];
+      box.innerHTML = `
+        <div class="suggest-header">💡 추천 검색 키워드 (클릭 시 바로 검색)</div>
+        <div class="suggest-chips">
+          ${popularKeywords.map(kw => `<span class="suggest-chip" data-kw="${kw}">${kw}</span>`).join('')}
+        </div>
+      `;
+      box.classList.add('open');
+      bindSuggestClicks();
+      return;
+    }
+
+    const tokenSet = new Set();
+    const matchedSkus = [];
+
+    for (let i = 0; i < state.rawItems.length; i++) {
+      const it = state.rawItems[i];
+      const codeL = it.code.toLowerCase();
+      const nameL = it.name.toLowerCase();
+      if (codeL.includes(q) || nameL.includes(q)) {
+        if (matchedSkus.length < 8) matchedSkus.push(it);
+        const words = it.name.split(/[\s()[\]\-_/,]+/);
+        words.forEach(w => {
+          if (w.length >= 2 && w.toLowerCase().includes(q) && tokenSet.size < 12) {
+            tokenSet.add(w);
+          }
+        });
+      }
+    }
+
+    if (matchedSkus.length === 0 && tokenSet.size === 0) {
+      box.innerHTML = `<div style="padding:8px;font-size:12px;color:var(--text-tertiary);">'${escapeHtml(query)}'와 일치하는 품목이 없습니다.</div>`;
+      box.classList.add('open');
+      return;
+    }
+
+    const chipsHtml = tokenSet.size > 0 ? `
+      <div class="suggest-header">🔗 연관·유사 키워드</div>
+      <div class="suggest-chips">
+        ${Array.from(tokenSet).map(kw => `<span class="suggest-chip" data-kw="${escapeHtml(kw)}">${escapeHtml(kw)}</span>`).join('')}
+      </div>
+    ` : '';
+
+    const skusHtml = matchedSkus.map(it => `
+      <div class="suggest-item" data-kw="${escapeHtml(it.code)}">
+        <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          <span class="code-badge" style="margin-right:6px;">${it.code}</span>
+          <span>${escapeHtml(it.name)}</span>
+        </div>
+        <span style="font-size:11px;color:var(--text-tertiary);flex-shrink:0;">${formatMillion(getItemAmt(it), 1)}</span>
+      </div>
+    `).join('');
+
+    box.innerHTML = `
+      ${chipsHtml}
+      <div class="suggest-header">📦 일치하는 품목 (${matchedSkus.length}건 미리보기)</div>
+      ${skusHtml}
+    `;
+    box.classList.add('open');
+    bindSuggestClicks();
+  }
+
+  function bindSuggestClicks() {
+    const box = document.getElementById('tableSuggestBox');
+    box.querySelectorAll('[data-kw]').forEach(el => {
+      el.addEventListener('click', () => {
+        const kw = el.getAttribute('data-kw');
+        const inp = document.getElementById('inpTableSearch');
+        inp.value = kw;
+        state.tableSearch = kw;
+        state.page = 1;
+        box.classList.remove('open');
+        renderDataTable(getGlobalFilteredItems());
+      });
+    });
+  }
+
+  /* ==========================================================================
+     15. 실행 환경 자동 분기 & 서버 데이터 갱신 스케줄러
+         - 최초 1회 즉시 로드 + 매일 00시 00분(자정) 1회 자동 갱신
+     ========================================================================== */
+  async function fetchExcelFromServer() {
+    const pill = document.getElementById('envStatusPill');
+    try {
+      const url = DATA_URL + '?t=' + Date.now();
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
+      const buf = await res.arrayBuffer();
+      pill.className = 'status-pill live';
+      pill.textContent = '● LIVE 서버 연동 (최초 1회 · 매일 00:00 갱신)';
+      document.getElementById('btnManualReload').style.display = 'inline-flex';
+      parseWorkbookBuffer(buf, '서버 ./data.xlsx', 'data.xlsx');
+    } catch (err) {
+      console.warn('자동 fetch 실패:', err);
+      pill.className = 'status-pill error';
+      pill.textContent = '● data.xlsx 로드 대기 중';
+      showUploadZone(
+        '서버에서 ./data.xlsx 파일을 불러오지 못했습니다',
+        `상대경로(${DATA_URL})에서 파일을 찾을 수 없거나 접근이 거부되었습니다(${err.message}). 아래 버튼 또는 드래그&드롭으로 엑셀 파일을 직접 선택해주세요.`
+      );
+    }
+  }
+
+  // 매일 00시 00분(자정) 정각에 1회만 서버 데이터를 갱신하고 다음 날 00시 00분을 재예약하는 함수
+  function scheduleMidnightRefresh() {
+    if (state.midnightTimer) {
+      clearTimeout(state.midnightTimer);
+    }
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+    state.midnightTimer = setTimeout(async () => {
+      await fetchExcelFromServer();
+      scheduleMidnightRefresh();
+    }, msUntilMidnight);
+  }
+
+  function handleLocalFile(file) {
+    if (!file) return;
+    const pill = document.getElementById('envStatusPill');
+    pill.className = 'status-pill file';
+    pill.textContent = `● 로컬 파일 모드 (${file.name})`;
+
+    const reader = new FileReader();
+    reader.onload = (e) => parseWorkbookBuffer(e.target.result, `파일: ${file.name}`, file.name);
+    reader.onerror = () => showErrorBanner('파일을 읽는 도중 오류가 발생했습니다.');
+    reader.readAsArrayBuffer(file);
+  }
+
+  function handleCompareFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => parseCompareWorkbookBuffer(e.target.result, file.name);
+    reader.onerror = () => alert('비교 파일을 읽는 도중 오류가 발생했습니다.');
+    reader.readAsArrayBuffer(file);
+  }
+
+  function clearCompareMode() {
+    state.compData = null;
+    document.getElementById('compareFileInput').value = '';
+    document.getElementById('siderCompareStatusBadge').textContent = '대기 중';
+    document.getElementById('siderCompareStatusBadge').style.color = '#69B1FF';
+    document.getElementById('siderCompareDesc').textContent =
+      '열 위치나 구성에 일부 차이가 있는 파일도 기본 원칙에 맞춰 자동 추출·비교합니다.';
+    document.getElementById('btnSiderCompareClear').style.display = 'none';
+    renderAll();
+  }
+
+  function showUploadZone(title, desc) {
+    const container = document.getElementById('dropZoneContainer');
+    container.style.display = 'block';
+    if (title) document.getElementById('dropZoneTitle').textContent = title;
+    if (desc) document.getElementById('dropZoneDesc').textContent = desc;
+  }
+
+  function hideErrorAndUploadZone() {
+    document.getElementById('dropZoneContainer').style.display = 'none';
+    document.getElementById('errorBanner').style.display = 'none';
+  }
+
+  function showErrorBanner(msg) {
+    const b = document.getElementById('errorBanner');
+    b.style.display = 'flex';
+    document.getElementById('errorBannerMsg').textContent = msg;
+  }
+
+  function updateLastUpdatedTime(sourceLabel) {
+    const now = new Date();
+    const tStr = now.toLocaleTimeString('ko-KR', { hour12: false });
+    document.getElementById('lastUpdatedText').textContent = `최종 갱신: ${tStr} (${sourceLabel})`;
+  }
+
+  /* ==========================================================================
+     16. 이벤트 바인딩 & 복수선택 토글 헬퍼
+     ========================================================================== */
+  function setupMultiButtonGroup(containerId, stateSet, onChange) {
+    const container = document.getElementById(containerId);
+    const buttons = container.querySelectorAll('.multi-btn');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.val;
+        if (val === 'ALL') {
+          stateSet.clear();
+          buttons.forEach(b => b.classList.toggle('active', b.dataset.val === 'ALL'));
+        } else {
+          if (stateSet.has(val)) {
+            stateSet.delete(val);
+          } else {
+            stateSet.add(val);
+          }
+          const allBtn = container.querySelector('[data-val="ALL"]');
+          if (stateSet.size === 0) {
+            if (allBtn) allBtn.classList.add('active');
+            buttons.forEach(b => { if (b.dataset.val !== 'ALL') b.classList.remove('active'); });
+          } else {
+            if (allBtn) allBtn.classList.remove('active');
+            buttons.forEach(b => {
+              if (b.dataset.val !== 'ALL') {
+                b.classList.toggle('active', stateSet.has(b.dataset.val));
+              }
+            });
+          }
+        }
+        onChange();
+      });
+    });
+  }
+
+  function bindEvents() {
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) handleLocalFile(e.target.files[0]);
+    });
+
+    const compareInput = document.getElementById('compareFileInput');
+    document.getElementById('btnSiderCompare').addEventListener('click', () => compareInput.click());
+    document.getElementById('btnReuploadCompare').addEventListener('click', () => compareInput.click());
+    compareInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) handleCompareFile(e.target.files[0]);
+    });
+    document.getElementById('btnSiderCompareClear').addEventListener('click', clearCompareMode);
+    document.getElementById('btnCloseComparePanel').addEventListener('click', clearCompareMode);
+
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(evtName => {
+      window.addEventListener(evtName, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(evtName => {
+      window.addEventListener(evtName, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+    });
+    window.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleLocalFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    document.getElementById('btnManualReload').addEventListener('click', fetchExcelFromServer);
+
+    // 상단 글로벌 필터: 본부 선택
+    document.querySelectorAll('#segScope button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#segScope button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.scope = btn.dataset.val;
+        state.page = 1;
+        renderAll();
+      });
+    });
+
+    // 상단 글로벌 필터: IP 선택
+    document.getElementById('selGlobalIp').addEventListener('change', (e) => {
+      state.globalIp = e.target.value;
+      state.page = 1;
+      renderAll();
+    });
+
+    // 상단 글로벌 검색어
+    document.getElementById('inpGlobalSearch').addEventListener('input', (e) => {
+      state.globalSearch = e.target.value;
+      state.page = 1;
+      renderAll();
+    });
+
+    // [차트 5] 1) 품목코드(3·4번째) & 2) IP 복수선택
+    setupMultiButtonGroup('c5MidGroup', state.c5Mids, () => renderChart5TopPrefix(getGlobalFilteredItems()));
+    setupMultiButtonGroup('c5IpGroup', state.c5Ips, () => renderChart5TopPrefix(getGlobalFilteredItems()));
+
+    // [차트 4] 재고등급 복수선택
+    const c4Container = document.getElementById('c4GradeGroup');
+    const c4Btns = c4Container.querySelectorAll('.multi-btn');
+    function syncC4BtnStyles() {
+      const allSelected = state.c4Grades.size === 3;
+      c4Btns.forEach(b => {
+        const v = b.dataset.val;
+        b.classList.remove('active', 'active-danger', 'active-warning', 'active-success');
+        if (v === 'ALL') {
+          if (allSelected) b.classList.add('active');
+        } else if (state.c4Grades.has(v)) {
+          if (v === '악성') b.classList.add('active-danger');
+          if (v === '부진') b.classList.add('active-warning');
+          if (v === '정상') b.classList.add('active-success');
+        }
+      });
+    }
+    c4Btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.val;
+        if (val === 'ALL') {
+          state.c4Grades = new Set(['악성', '부진', '정상']);
+        } else {
+          if (state.c4Grades.has(val)) {
+            if (state.c4Grades.size > 1) state.c4Grades.delete(val);
+          } else {
+            state.c4Grades.add(val);
+          }
+        }
+        syncC4BtnStyles();
+        renderChart4RiskScatter(getGlobalFilteredItems());
+      });
+    });
+
+    // Row 3 좌측 카드 탭 전환 ([차트 5] <-> [차트 1])
+    document.querySelectorAll('#segLeftChartTab button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#segLeftChartTab button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        state.leftTab = tab;
+
+        if (tab === 'chart5') {
+          document.getElementById('paneChart5').style.display = 'flex';
+          document.getElementById('paneChart1').style.display = 'none';
+          document.getElementById('leftTabDesc').textContent = '1) 품목코드(3·4번째) 버튼 클릭에 따라 동적 반영되는 품목군 Top 10 및 IP 복수선택 분석';
+          renderChart5TopPrefix(getGlobalFilteredItems());
+        } else {
+          document.getElementById('paneChart5').style.display = 'none';
+          document.getElementById('paneChart1').style.display = 'flex';
+          document.getElementById('leftTabTitle').textContent = '[차트 1] IP별 재고 구성 (비중 · 수량 · 백만원 금액)';
+          document.getElementById('leftTabDesc').textContent = 'C열 품목명 우선순위 분류(해치멀/해치 분리, 잔망 포함)에 따른 IP별 재고 현황';
+          renderChart1IpComposition(getGlobalFilteredItems());
+        }
+      });
+    });
+
+    // [차트 6 테이블] 빠른 필터 탭
+    document.querySelectorAll('#tableQuickTabs .quick-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#tableQuickTabs .quick-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.quickTab = btn.dataset.qtab;
+        state.page = 1;
+        renderDataTable(getGlobalFilteredItems());
+      });
+    });
+
+    // 품목코드 드롭다운 (전체 / T1 / P1 / L1 / T2)
+    document.getElementById('selTableCodeMid').addEventListener('change', (e) => {
+      state.tableCodeMid = e.target.value;
+      state.page = 1;
+      renderDataTable(getGlobalFilteredItems());
+    });
+
+    // IP 복수선택 드롭다운
+    const ipDropdownBtn = document.getElementById('btnTableIpDropdown');
+    const ipDropdownMenu = document.getElementById('menuTableIpDropdown');
+    const ipAllChk = ipDropdownMenu.querySelector('input[value="ALL"]');
+    const ipChks = ipDropdownMenu.querySelectorAll('.ip-chk');
+
+    ipDropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ipDropdownMenu.classList.toggle('open');
+    });
+
+    function updateTableIpLabel() {
+      const lbl = document.getElementById('lblTableIpSelected');
+      if (state.tableIps.size === IP_PRIORITY_LIST.length || state.tableIps.size === 0) {
+        lbl.textContent = '전체';
+      } else if (state.tableIps.size <= 2) {
+        lbl.textContent = Array.from(state.tableIps).join(', ');
+      } else {
+        lbl.textContent = `${Array.from(state.tableIps)[0]} 외 ${state.tableIps.size - 1}건`;
+      }
+    }
+
+    ipAllChk.addEventListener('change', (e) => {
+      const checked = e.target.checked;
+      state.tableIps.clear();
+      ipChks.forEach(chk => {
+        chk.checked = checked;
+        if (checked) state.tableIps.add(chk.value);
+      });
+      if (!checked) {
+        state.tableIps = new Set(IP_PRIORITY_LIST);
+        ipChks.forEach(c => c.checked = true);
+        ipAllChk.checked = true;
+      }
+      updateTableIpLabel();
+      state.page = 1;
+      renderDataTable(getGlobalFilteredItems());
+    });
+
+    ipChks.forEach(chk => {
+      chk.addEventListener('change', () => {
+        state.tableIps.clear();
+        ipChks.forEach(c => { if (c.checked) state.tableIps.add(c.value); });
+        if (state.tableIps.size === 0) {
+          state.tableIps = new Set(IP_PRIORITY_LIST);
+          ipChks.forEach(c => c.checked = true);
+        }
+        ipAllChk.checked = (state.tableIps.size === IP_PRIORITY_LIST.length);
+        updateTableIpLabel();
+        state.page = 1;
+        renderDataTable(getGlobalFilteredItems());
+      });
+    });
+
+    // 재고등급(BJ) 복수선택 버튼
+    setupMultiButtonGroup('tableGradeGroup', state.tableGrades, () => {
+      state.page = 1;
+      renderDataTable(getGlobalFilteredItems());
+    });
+
+    // 검색창 + 유사 키워드 자동 안내
+    const inpTableSearch = document.getElementById('inpTableSearch');
+    const suggestBox = document.getElementById('tableSuggestBox');
+
+    inpTableSearch.addEventListener('focus', () => {
+      updateSearchSuggestions(inpTableSearch.value);
+    });
+    inpTableSearch.addEventListener('input', (e) => {
+      state.tableSearch = e.target.value;
+      state.page = 1;
+      updateSearchSuggestions(e.target.value);
+      renderDataTable(getGlobalFilteredItems());
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!document.getElementById('tableIpDropdown').contains(e.target)) {
+        ipDropdownMenu.classList.remove('open');
+      }
+      if (!document.getElementById('tableSearchWrap').contains(e.target)) {
+        suggestBox.classList.remove('open');
+      }
+    });
+
+    // 전체 필터 초기화
+    document.getElementById('btnResetFilters').addEventListener('click', () => {
+      state.scope = 'sales';
+      state.globalIp = 'ALL';
+      state.globalSearch = '';
+      state.c5Mids.clear();
+      state.c5Ips.clear();
+      state.c4Grades = new Set(['악성', '부진', '정상']);
+      state.quickTab = 'ALL';
+      state.tableCodeMid = 'ALL';
+      state.tableIps = new Set(IP_PRIORITY_LIST);
+      state.tableGrades.clear();
+      state.tableSearch = '';
+      state.page = 1;
+
+      document.querySelectorAll('#segScope button').forEach(b => b.classList.toggle('active', b.dataset.val === 'sales'));
+      document.getElementById('selGlobalIp').value = 'ALL';
+      document.getElementById('inpGlobalSearch').value = '';
+      document.getElementById('selTableCodeMid').value = 'ALL';
+      document.getElementById('inpTableSearch').value = '';
+
+      ['c5MidGroup', 'c5IpGroup', 'tableGradeGroup'].forEach(id => {
+        document.querySelectorAll(`#${id} .multi-btn`).forEach(b => b.classList.toggle('active', b.dataset.val === 'ALL'));
+      });
+      syncC4BtnStyles();
+
+      ipAllChk.checked = true;
+      ipChks.forEach(c => c.checked = true);
+      updateTableIpLabel();
+
+      document.querySelectorAll('#tableQuickTabs .quick-tab').forEach(b => b.classList.toggle('active', b.dataset.qtab === 'ALL'));
+      renderAll();
+    });
+
+    // 테이블 컬럼 정렬
+    document.querySelectorAll('#skuTable thead th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (state.sortKey === key) {
+          state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortKey = key;
+          state.sortDir = 'desc';
+        }
+        document.querySelectorAll('#skuTable thead th .sort-ind').forEach(s => s.textContent = '');
+        th.querySelector('.sort-ind').textContent = state.sortDir === 'asc' ? '▲' : '▼';
+        renderDataTable(getGlobalFilteredItems());
+      });
+    });
+
+    // 페이지네이션
+    document.getElementById('selPageSize').addEventListener('change', (e) => {
+      state.pageSize = Number(e.target.value);
+      state.page = 1;
+      renderDataTable(getGlobalFilteredItems());
+    });
+    document.getElementById('btnPrevPage').addEventListener('click', () => {
+      if (state.page > 1) { state.page--; renderDataTable(getGlobalFilteredItems()); }
+    });
+    document.getElementById('btnNextPage').addEventListener('click', () => {
+      state.page++; renderDataTable(getGlobalFilteredItems());
+    });
+
+    document.getElementById('btnExportCsv').addEventListener('click', exportFilteredToCsv);
+  }
+
+  function exportFilteredToCsv() {
+    const items = getGlobalFilteredItems();
+    if (!items.length) return;
+    const headers = ['품목코드', '코드분류(3·4번째)', 'IP분류', '품목명', '영업본부수량(개)', '기말단가', '영업본부금액', '재고증가율(%)', '재고회전율', '기존등급(AP)', '실질등급(BJ)', '최종입고일', '경과개월수'];
+    const csvRows = [headers.join(',')];
+
+    items.forEach(it => {
+      const incStr = it.isNewStock ? '신규순증' : it.incRate.toFixed(2);
+      const row = [
+        it.code,
+        it.codeMid,
+        it.ip,
+        `"${it.name.replace(/"/g, '""')}"`,
+        Math.round(it.qtySales),
+        Math.round(it.unitPrice),
+        Math.round(it.amtSales),
+        incStr,
+        it.turnover.toFixed(2),
+        it.gradeAP,
+        it.gradeBJ,
+        it.isMissingDate ? '입고일미상' : (it.lastInDate || ''),
+        it.months
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `아이코닉스_영업본부_재고명세_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+  }
+
+  // 초기 실행: location.protocol 확인 후 자동 분기
+  window.addEventListener('DOMContentLoaded', () => {
+    bindEvents();
+
+    const protocol = window.location.protocol;
+    const pill = document.getElementById('envStatusPill');
+
+    if (protocol === 'http:' || protocol === 'https:') {
+      // 1) 최초 1회 서버 데이터 로드 + 매일 00시 00분(자정) 1회 자동 갱신 예약
+      fetchExcelFromServer();
+      scheduleMidnightRefresh();
+    } else {
+      // 2) 로컬 file:// 모드
+      pill.className = 'status-pill file';
+      pill.textContent = '● 로컬 파일(file://) 모드';
+      showUploadZone(
+        '로컬 파일(file://) 모드로 실행 중입니다',
+        '브라우저 보안 정책상 file:// 경로에서는 자동 fetch가 제한됩니다. 아래 [기준 파일 선택] 버튼을 누르거나 재고등급현황 작성표(data.xlsx) 파일을 이 화면에 드래그 & 드롭하세요.'
+      );
+    }
+  });
+</script>
+</body>
+</html>
